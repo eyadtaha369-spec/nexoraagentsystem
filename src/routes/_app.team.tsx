@@ -23,6 +23,12 @@ function TeamPage() {
   const roleFn = useServerFn(setUserRole);
   const queryClient = useQueryClient();
 
+  const inviteFn = useServerFn(inviteUser);
+  const [invEmail, setInvEmail] = useState("");
+  const [invName, setInvName] = useState("");
+  const [invPw, setInvPw] = useState("");
+  const [inviting, setInviting] = useState(false);
+
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
   const { data } = useQuery({ queryKey: ["agents"], queryFn: () => listFn() });
 
