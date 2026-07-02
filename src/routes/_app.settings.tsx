@@ -8,7 +8,17 @@ import { RefreshCw, ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/_app/settings")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Settings — Nexora CRM" }] }),
+  beforeLoad: async () => {
+    const { getMe } = await import("@/lib/crm.functions");
+    const { redirect } = await import("@tanstack/react-router");
+    const me = await getMe();
+    const roles = me.roles as string[];
+    if (!roles.includes("admin") && !roles.includes("owner")) {
+      throw redirect({ to: "/agent-dashboard" });
+    }
+  },
   component: SettingsPage,
 });
 
