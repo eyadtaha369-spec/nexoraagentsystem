@@ -24,7 +24,9 @@ function AppLayout() {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const isOwner = me?.roles.includes("owner");
+  const roles = (me?.roles || []) as string[];
+  const isAdmin = roles.includes("admin") || roles.includes("owner");
+  const isOwner = isAdmin;
 
   async function signOut() {
     await queryClient.cancelQueries();
