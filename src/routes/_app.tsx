@@ -24,7 +24,9 @@ function AppLayout() {
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const isOwner = me?.roles.includes("owner");
+  const roles = (me?.roles || []) as string[];
+  const isAdmin = roles.includes("admin") || roles.includes("owner");
+  const isOwner = isAdmin;
 
   async function signOut() {
     await queryClient.cancelQueries();
@@ -83,7 +85,7 @@ function AppLayout() {
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{me?.profile?.full_name || me?.profile?.email}</div>
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {isOwner ? "Owner" : "Agent"}
+                  {isAdmin ? "Admin" : "Agent"}
                   {me?.profile?.sheet_tab_name ? ` • ${me.profile.sheet_tab_name}` : ""}
                 </div>
               </div>

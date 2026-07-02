@@ -19,7 +19,7 @@ function sanitizeUrl(v: string | null | undefined): string | null {
 async function assertOwner(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
   const roles = (data || []).map((r: any) => r.role);
-  if (!roles.includes("owner")) throw new Error("Forbidden: owner only");
+  if (!roles.includes("owner") && !roles.includes("admin")) throw new Error("Forbidden: admin only");
 }
 
 // -----------------------------------------------------------

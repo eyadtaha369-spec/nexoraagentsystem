@@ -12,7 +12,17 @@ import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_app/team")({
+  ssr: false,
   head: () => ({ meta: [{ title: "Team — Nexora CRM" }] }),
+  beforeLoad: async () => {
+    const { getMe } = await import("@/lib/crm.functions");
+    const { redirect } = await import("@tanstack/react-router");
+    const me = await getMe();
+    const roles = me.roles as string[];
+    if (!roles.includes("admin") && !roles.includes("owner")) {
+      throw redirect({ to: "/agent-dashboard" });
+    }
+  },
   component: TeamPage,
 });
 
