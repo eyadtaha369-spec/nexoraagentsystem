@@ -33,9 +33,19 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const isAuthError = /unauthorized|no authorization header/i.test(error?.message || "");
   useEffect(() => {
+    if (isAuthError) {
+      // Session missing/expired — bounce to sign-in instead of showing a blank error.
+      supabase.auth.signOut().finally(() => {
+        router.navigate({ to: "/auth", replace: true });
+        reset();
+      });
+      return;
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+  }, [error, isAuthError, router, reset]);
+  if (isAuthError) return null;
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="glass-card p-10 text-center max-w-md">
