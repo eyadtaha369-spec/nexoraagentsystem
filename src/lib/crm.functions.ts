@@ -313,3 +313,29 @@ export const setUserRole = createServerFn({ method: "POST" })
     await supabaseAdmin.from("user_roles").insert({ user_id: data.userId, role: data.role });
     return { ok: true };
   });
+
+// -----------------------------------------------------------
+// Invite (create) a new user (owner only). Public self-signup is disabled;
+// only owners may provision accounts, which are created pre-confirmed.
+// -----------------------------------------------------------
+export const inviteUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { email: string; fullName: string; password: string }) =>
+    z.object({
+      email: z.string().trim().email().max(255),
+      fullName: z.string().trim().min(1).max(200),
+      password: z.string().min(8).max(128),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwner(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true, userId: created.user?.id };
+  });
