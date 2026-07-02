@@ -4,8 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getMe } from "@/lib/crm.functions";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, Contact, LogOut, RefreshCw, Settings } from "lucide-react";
-import { toast } from "sonner";
+import { LayoutDashboard, Users, Contact, LogOut, Settings } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_app")({
@@ -132,23 +131,3 @@ function AppLayout() {
   );
 }
 
-export function SyncButton() {
-  const queryClient = useQueryClient();
-  const { syncFromSheet } = require("@/lib/crm.functions");
-  const syncFn = useServerFn(syncFromSheet);
-  async function run() {
-    try {
-      toast.info("Syncing from Google Sheet…");
-      const r = await syncFn();
-      toast.success(`Imported ${r.imported} of ${r.total} rows`);
-      queryClient.invalidateQueries();
-    } catch (e: any) {
-      toast.error(e?.message || "Sync failed");
-    }
-  }
-  return (
-    <Button onClick={run} variant="outline" className="gap-2">
-      <RefreshCw className="h-4 w-4" /> Sync sheet
-    </Button>
-  );
-}
