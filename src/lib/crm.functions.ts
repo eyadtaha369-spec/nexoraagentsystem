@@ -4,6 +4,18 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const STATUSES = ["New", "Contacted", "Interested", "Won", "Lost"] as const;
 
+// URL fields must be http/https only (or empty) to prevent javascript: / data: XSS via anchor hrefs.
+const safeUrl = z.string().trim().max(500).refine(
+  (v) => v === "" || /^https?:\/\//i.test(v),
+  { message: "URL must start with http:// or https://" },
+);
+function sanitizeUrl(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = String(v).trim();
+  if (!t) return null;
+  return /^https?:\/\//i.test(t) ? t : null;
+}
+
 async function assertOwner(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
   const roles = (data || []).map((r: any) => r.role);
