@@ -202,11 +202,11 @@ export const createLead = createServerFn({ method: "POST" })
     assignedAgent: string; notes: string;
   }) =>
     z.object({
-      clientName: z.string().max(200),
-      phone: z.string().max(50),
-      mapsLink: z.string().max(500),
-      instagramLink: z.string().max(500),
-      facebookLink: z.string().max(500),
+      clientName: z.string().trim().max(200),
+      phone: z.string().trim().max(50),
+      mapsLink: safeUrl,
+      instagramLink: safeUrl,
+      facebookLink: safeUrl,
       assignedAgent: z.string(),
       notes: z.string().max(4000),
     }).parse(input),
