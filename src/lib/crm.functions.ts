@@ -130,7 +130,7 @@ export const reassignLead = createServerFn({ method: "POST" })
         notes: lead.notes ?? "",
         dateAdded: lead.date_added ? new Date(lead.date_added).toISOString().replace("T", " ").slice(0, 16) : "",
       });
-      if (lead.sheet_row) await clearLeadRow(lead.assigned_agent, lead.sheet_row);
+      if (lead.sheet_row) await clearLeadRow(lead.assigned_agent as any, lead.sheet_row);
     } catch (e) {
       console.error("Sheet move failed", e);
     }
