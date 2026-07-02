@@ -6,7 +6,8 @@ export const Route = createFileRoute("/_app/dashboard")({
   ssr: false,
   beforeLoad: async () => {
     const me = await getMe();
-    const isAdmin = me.roles.includes("admin") || me.roles.includes("owner");
+    const roles = me.roles as string[];
+    const isAdmin = roles.includes("admin") || roles.includes("owner");
     throw redirect({ to: isAdmin ? "/admin-dashboard" : "/agent-dashboard" });
   },
 });
