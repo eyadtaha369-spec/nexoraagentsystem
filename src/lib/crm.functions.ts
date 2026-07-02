@@ -4,6 +4,18 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const STATUSES = ["New", "Contacted", "Interested", "Won", "Lost"] as const;
 
+// URL fields must be http/https only (or empty) to prevent javascript: / data: XSS via anchor hrefs.
+const safeUrl = z.string().trim().max(500).refine(
+  (v) => v === "" || /^https?:\/\//i.test(v),
+  { message: "URL must start with http:// or https://" },
+);
+function sanitizeUrl(v: string | null | undefined): string | null {
+  if (!v) return null;
+  const t = String(v).trim();
+  if (!t) return null;
+  return /^https?:\/\//i.test(t) ? t : null;
+}
+
 async function assertOwner(ctx: { supabase: any; userId: string }) {
   const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
   const roles = (data || []).map((r: any) => r.role);
@@ -163,9 +175,9 @@ export const syncFromSheet = createServerFn({ method: "POST" })
           client_id: r.clientId,
           client_name: r.clientName || null,
           phone: r.phone || null,
-          maps_link: r.mapsLink || null,
-          instagram_link: r.instagramLink || null,
-          facebook_link: r.facebookLink || null,
+          maps_link: sanitizeUrl(r.mapsLink),
+          instagram_link: sanitizeUrl(r.instagramLink),
+          facebook_link: sanitizeUrl(r.facebookLink),
           status: r.status || "New",
           notes: r.notes || null,
           date_added: r.dateAdded ? new Date(r.dateAdded).toISOString() : new Date().toISOString(),
@@ -190,11 +202,11 @@ export const createLead = createServerFn({ method: "POST" })
     assignedAgent: string; notes: string;
   }) =>
     z.object({
-      clientName: z.string().max(200),
-      phone: z.string().max(50),
-      mapsLink: z.string().max(500),
-      instagramLink: z.string().max(500),
-      facebookLink: z.string().max(500),
+      clientName: z.string().trim().max(200),
+      phone: z.string().trim().max(50),
+      mapsLink: safeUrl,
+      instagramLink: safeUrl,
+      facebookLink: safeUrl,
       assignedAgent: z.string(),
       notes: z.string().max(4000),
     }).parse(input),
@@ -300,4 +312,30 @@ export const setUserRole = createServerFn({ method: "POST" })
     await supabaseAdmin.from("user_roles").delete().eq("user_id", data.userId);
     await supabaseAdmin.from("user_roles").insert({ user_id: data.userId, role: data.role });
     return { ok: true };
+  });
+
+// -----------------------------------------------------------
+// Invite (create) a new user (owner only). Public self-signup is disabled;
+// only owners may provision accounts, which are created pre-confirmed.
+// -----------------------------------------------------------
+export const inviteUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { email: string; fullName: string; password: string }) =>
+    z.object({
+      email: z.string().trim().email().max(255),
+      fullName: z.string().trim().min(1).max(200),
+      password: z.string().min(8).max(128),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertOwner(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName },
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true, userId: created.user?.id };
   });

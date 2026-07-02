@@ -1,9 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAgents, assignAgentTab, setUserRole, getMe } from "@/lib/crm.functions";
+import { useState } from "react";
+import { listAgents, assignAgentTab, setUserRole, getMe, inviteUser } from "@/lib/crm.functions";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -18,6 +22,12 @@ function TeamPage() {
   const assignFn = useServerFn(assignAgentTab);
   const roleFn = useServerFn(setUserRole);
   const queryClient = useQueryClient();
+
+  const inviteFn = useServerFn(inviteUser);
+  const [invEmail, setInvEmail] = useState("");
+  const [invName, setInvName] = useState("");
+  const [invPw, setInvPw] = useState("");
+  const [inviting, setInviting] = useState(false);
 
   const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
   const { data } = useQuery({ queryKey: ["agents"], queryFn: () => listFn() });
@@ -46,6 +56,17 @@ function TeamPage() {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
     } catch (e: any) { toast.error(e?.message || "Update failed"); }
   }
+  async function submitInvite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setInviting(true);
+    try {
+      await inviteFn({ data: { email: invEmail, fullName: invName, password: invPw } });
+      toast.success(`Invited ${invEmail}. Share the temporary password with them.`);
+      setInvEmail(""); setInvName(""); setInvPw("");
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+    } catch (e: any) { toast.error(e?.message || "Invite failed"); }
+    finally { setInviting(false); }
+  }
 
   return (
     <div className="space-y-6">
@@ -55,9 +76,33 @@ function TeamPage() {
           <span className="gradient-text">Agents</span> & permissions
         </h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-          Each agent must be linked to one of the 8 tabs in the Google Sheet. Their name in the sheet becomes their assigned-agent identity in the CRM.
+          Public self-signup is disabled. Invite each agent below, then link them to one of the 8 sheet tabs.
         </p>
       </header>
+
+      <div className="glass-card p-6">
+        <h2 className="font-semibold mb-3">Invite new user</h2>
+        <form onSubmit={submitInvite} className="grid gap-3 md:grid-cols-4">
+          <div className="space-y-1">
+            <Label htmlFor="inv-name">Full name</Label>
+            <Input id="inv-name" value={invName} onChange={(e) => setInvName(e.target.value)} required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="inv-email">Email</Label>
+            <Input id="inv-email" type="email" value={invEmail} onChange={(e) => setInvEmail(e.target.value)} required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="inv-pw">Temp password</Label>
+            <Input id="inv-pw" type="text" minLength={8} value={invPw} onChange={(e) => setInvPw(e.target.value)} required />
+          </div>
+          <div className="flex items-end">
+            <Button type="submit" disabled={inviting} className="w-full btn-brand hover:btn-brand-hover border-0">
+              {inviting ? "Inviting…" : "Invite"}
+            </Button>
+          </div>
+        </form>
+      </div>
+
 
       <div className="glass-card overflow-hidden">
         <Table>
