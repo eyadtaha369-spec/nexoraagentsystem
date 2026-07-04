@@ -1,10 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
-
+// Root redirect. The AuthContext hydrates client-side; we defer routing to /login
+// which itself bounces to /dashboard when a session exists.
 export const Route = createFileRoute("/")({
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) throw redirect({ to: "/dashboard" });
-    throw redirect({ to: "/auth" });
-  },
+  ssr: false,
+  beforeLoad: () => { throw redirect({ to: "/login" }); },
 });

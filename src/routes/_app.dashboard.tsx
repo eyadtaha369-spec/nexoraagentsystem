@@ -1,13 +1,17 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { getMe } from "@/lib/crm.functions";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
-// /dashboard redirects to the correct role-specific dashboard.
 export const Route = createFileRoute("/_app/dashboard")({
   ssr: false,
-  beforeLoad: async () => {
-    const me = await getMe();
-    const roles = me.roles as string[];
-    const isAdmin = roles.includes("admin") || roles.includes("owner");
-    throw redirect({ to: isAdmin ? "/admin-dashboard" : "/agent-dashboard" });
-  },
+  component: RedirectDashboard,
 });
+
+function RedirectDashboard() {
+  const { user } = useAuth();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (user) nav({ to: user.role === "admin" ? "/admin-dashboard" : "/agent-dashboard", replace: true });
+  }, [user, nav]);
+  return null;
+}

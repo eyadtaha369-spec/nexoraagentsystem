@@ -9,19 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AuthRouteImport } from './routes/auth'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppTeamRouteImport } from './routes/_app.team'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppReportsRouteImport } from './routes/_app.reports'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppLeadsRouteImport } from './routes/_app.leads'
+import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
+import { Route as AppFollowUpsRouteImport } from './routes/_app.follow-ups'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppCalendarRouteImport } from './routes/_app.calendar'
+import { Route as AppAnalyticsRouteImport } from './routes/_app.analytics'
+import { Route as AppAgentsRouteImport } from './routes/_app.agents'
 import { Route as AppAgentDashboardRouteImport } from './routes/_app.agent-dashboard'
 import { Route as AppAdminDashboardRouteImport } from './routes/_app.admin-dashboard'
+import { Route as AppActivityRouteImport } from './routes/_app.activity'
+import { Route as AppLeadsIdRouteImport } from './routes/_app.leads.$id'
 
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -33,14 +42,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppTeamRoute = AppTeamRouteImport.update({
-  id: '/team',
-  path: '/team',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeadsRoute = AppLeadsRouteImport.update({
@@ -48,9 +67,34 @@ const AppLeadsRoute = AppLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeaderboardRoute = AppLeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFollowUpsRoute = AppFollowUpsRouteImport.update({
+  id: '/follow-ups',
+  path: '/follow-ups',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCalendarRoute = AppCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAgentsRoute = AppAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAgentDashboardRoute = AppAgentDashboardRouteImport.update({
@@ -63,86 +107,150 @@ const AppAdminDashboardRoute = AppAdminDashboardRouteImport.update({
   path: '/admin-dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsIdRoute = AppLeadsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppLeadsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/activity': typeof AppActivityRoute
   '/admin-dashboard': typeof AppAdminDashboardRoute
   '/agent-dashboard': typeof AppAgentDashboardRoute
+  '/agents': typeof AppAgentsRoute
+  '/analytics': typeof AppAnalyticsRoute
+  '/calendar': typeof AppCalendarRoute
   '/dashboard': typeof AppDashboardRoute
-  '/leads': typeof AppLeadsRoute
+  '/follow-ups': typeof AppFollowUpsRoute
+  '/leaderboard': typeof AppLeaderboardRoute
+  '/leads': typeof AppLeadsRouteWithChildren
+  '/notifications': typeof AppNotificationsRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
-  '/team': typeof AppTeamRoute
+  '/leads/$id': typeof AppLeadsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/activity': typeof AppActivityRoute
   '/admin-dashboard': typeof AppAdminDashboardRoute
   '/agent-dashboard': typeof AppAgentDashboardRoute
+  '/agents': typeof AppAgentsRoute
+  '/analytics': typeof AppAnalyticsRoute
+  '/calendar': typeof AppCalendarRoute
   '/dashboard': typeof AppDashboardRoute
-  '/leads': typeof AppLeadsRoute
+  '/follow-ups': typeof AppFollowUpsRoute
+  '/leaderboard': typeof AppLeaderboardRoute
+  '/leads': typeof AppLeadsRouteWithChildren
+  '/notifications': typeof AppNotificationsRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
-  '/team': typeof AppTeamRoute
+  '/leads/$id': typeof AppLeadsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/_app/activity': typeof AppActivityRoute
   '/_app/admin-dashboard': typeof AppAdminDashboardRoute
   '/_app/agent-dashboard': typeof AppAgentDashboardRoute
+  '/_app/agents': typeof AppAgentsRoute
+  '/_app/analytics': typeof AppAnalyticsRoute
+  '/_app/calendar': typeof AppCalendarRoute
   '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/leads': typeof AppLeadsRoute
+  '/_app/follow-ups': typeof AppFollowUpsRoute
+  '/_app/leaderboard': typeof AppLeaderboardRoute
+  '/_app/leads': typeof AppLeadsRouteWithChildren
+  '/_app/notifications': typeof AppNotificationsRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
-  '/_app/team': typeof AppTeamRoute
+  '/_app/leads/$id': typeof AppLeadsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/auth'
+    | '/login'
+    | '/activity'
     | '/admin-dashboard'
     | '/agent-dashboard'
+    | '/agents'
+    | '/analytics'
+    | '/calendar'
     | '/dashboard'
+    | '/follow-ups'
+    | '/leaderboard'
     | '/leads'
+    | '/notifications'
+    | '/profile'
+    | '/reports'
     | '/settings'
-    | '/team'
+    | '/leads/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/auth'
+    | '/login'
+    | '/activity'
     | '/admin-dashboard'
     | '/agent-dashboard'
+    | '/agents'
+    | '/analytics'
+    | '/calendar'
     | '/dashboard'
+    | '/follow-ups'
+    | '/leaderboard'
     | '/leads'
+    | '/notifications'
+    | '/profile'
+    | '/reports'
     | '/settings'
-    | '/team'
+    | '/leads/$id'
   id:
     | '__root__'
     | '/'
     | '/_app'
-    | '/auth'
+    | '/login'
+    | '/_app/activity'
     | '/_app/admin-dashboard'
     | '/_app/agent-dashboard'
+    | '/_app/agents'
+    | '/_app/analytics'
+    | '/_app/calendar'
     | '/_app/dashboard'
+    | '/_app/follow-ups'
+    | '/_app/leaderboard'
     | '/_app/leads'
+    | '/_app/notifications'
+    | '/_app/profile'
+    | '/_app/reports'
     | '/_app/settings'
-    | '/_app/team'
+    | '/_app/leads/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -159,18 +267,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/team': {
-      id: '/_app/team'
-      path: '/team'
-      fullPath: '/team'
-      preLoaderRoute: typeof AppTeamRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/leads': {
@@ -180,11 +302,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeadsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/leaderboard': {
+      id: '/_app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof AppLeaderboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/follow-ups': {
+      id: '/_app/follow-ups'
+      path: '/follow-ups'
+      fullPath: '/follow-ups'
+      preLoaderRoute: typeof AppFollowUpsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/calendar': {
+      id: '/_app/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/analytics': {
+      id: '/_app/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AppAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/agents': {
+      id: '/_app/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AppAgentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/agent-dashboard': {
@@ -201,25 +358,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/activity': {
+      id: '/_app/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/leads/$id': {
+      id: '/_app/leads/$id'
+      path: '/$id'
+      fullPath: '/leads/$id'
+      preLoaderRoute: typeof AppLeadsIdRouteImport
+      parentRoute: typeof AppLeadsRoute
+    }
   }
 }
 
+interface AppLeadsRouteChildren {
+  AppLeadsIdRoute: typeof AppLeadsIdRoute
+}
+
+const AppLeadsRouteChildren: AppLeadsRouteChildren = {
+  AppLeadsIdRoute: AppLeadsIdRoute,
+}
+
+const AppLeadsRouteWithChildren = AppLeadsRoute._addFileChildren(
+  AppLeadsRouteChildren,
+)
+
 interface AppRouteChildren {
+  AppActivityRoute: typeof AppActivityRoute
   AppAdminDashboardRoute: typeof AppAdminDashboardRoute
   AppAgentDashboardRoute: typeof AppAgentDashboardRoute
+  AppAgentsRoute: typeof AppAgentsRoute
+  AppAnalyticsRoute: typeof AppAnalyticsRoute
+  AppCalendarRoute: typeof AppCalendarRoute
   AppDashboardRoute: typeof AppDashboardRoute
-  AppLeadsRoute: typeof AppLeadsRoute
+  AppFollowUpsRoute: typeof AppFollowUpsRoute
+  AppLeaderboardRoute: typeof AppLeaderboardRoute
+  AppLeadsRoute: typeof AppLeadsRouteWithChildren
+  AppNotificationsRoute: typeof AppNotificationsRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
-  AppTeamRoute: typeof AppTeamRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppActivityRoute: AppActivityRoute,
   AppAdminDashboardRoute: AppAdminDashboardRoute,
   AppAgentDashboardRoute: AppAgentDashboardRoute,
+  AppAgentsRoute: AppAgentsRoute,
+  AppAnalyticsRoute: AppAnalyticsRoute,
+  AppCalendarRoute: AppCalendarRoute,
   AppDashboardRoute: AppDashboardRoute,
-  AppLeadsRoute: AppLeadsRoute,
+  AppFollowUpsRoute: AppFollowUpsRoute,
+  AppLeaderboardRoute: AppLeaderboardRoute,
+  AppLeadsRoute: AppLeadsRouteWithChildren,
+  AppNotificationsRoute: AppNotificationsRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
-  AppTeamRoute: AppTeamRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -227,7 +426,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
-  AuthRoute: AuthRoute,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
