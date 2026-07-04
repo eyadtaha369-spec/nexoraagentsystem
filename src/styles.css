@@ -50,80 +50,72 @@
   --color-brand-teal: var(--brand-teal);
 }
 
-/* Porcelain white + luxury gold palette */
+/* Dark-first luxury CRM palette */
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.985 0.004 90);
-  --foreground: oklch(0.18 0.02 60);
+  --background: oklch(0.16 0.02 260);
+  --foreground: oklch(0.98 0.005 250);
 
-  --card: oklch(1 0 0 / 0.85);
-  --card-foreground: oklch(0.18 0.02 60);
-  --popover: oklch(0.99 0.003 90);
-  --popover-foreground: oklch(0.18 0.02 60);
+  --card: oklch(0.22 0.025 262 / 0.55);
+  --card-foreground: oklch(0.98 0.005 250);
+  --popover: oklch(0.19 0.025 262);
+  --popover-foreground: oklch(0.98 0.005 250);
 
-  --primary: oklch(0.72 0.13 82);
-  --primary-foreground: oklch(0.99 0.003 90);
+  --primary: oklch(0.72 0.17 262);
+  --primary-foreground: oklch(0.14 0.02 260);
 
-  --secondary: oklch(0.96 0.01 85);
-  --secondary-foreground: oklch(0.22 0.02 60);
+  --secondary: oklch(0.26 0.03 262);
+  --secondary-foreground: oklch(0.98 0.005 250);
 
-  --muted: oklch(0.95 0.01 85);
-  --muted-foreground: oklch(0.48 0.03 70);
+  --muted: oklch(0.24 0.025 262);
+  --muted-foreground: oklch(0.72 0.03 258);
 
-  --accent: oklch(0.93 0.04 85);
-  --accent-foreground: oklch(0.22 0.02 60);
+  --accent: oklch(0.32 0.06 265);
+  --accent-foreground: oklch(0.98 0.005 250);
 
-  --destructive: oklch(0.58 0.20 25);
-  --destructive-foreground: oklch(0.99 0.003 90);
+  --destructive: oklch(0.62 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 250);
 
-  --border: oklch(0.72 0.13 82 / 0.28);
-  --input: oklch(0.72 0.13 82 / 0.22);
-  --ring: oklch(0.72 0.13 82);
+  --border: oklch(1 0 0 / 0.08);
+  --input: oklch(1 0 0 / 0.10);
+  --ring: oklch(0.72 0.17 262);
 
-  /* Gold tones */
-  --brand-blue: oklch(0.82 0.12 88);    /* champagne */
-  --brand-purple: oklch(0.68 0.14 72);  /* deep gold */
-  --brand-teal: oklch(0.90 0.08 92);    /* pale gold */
+  --brand-blue: oklch(0.70 0.18 250);
+  --brand-purple: oklch(0.68 0.19 300);
+  --brand-teal: oklch(0.78 0.14 195);
 
-  --chart-1: oklch(0.72 0.13 82);
-  --chart-2: oklch(0.62 0.14 70);
-  --chart-3: oklch(0.85 0.10 90);
-  --chart-4: oklch(0.55 0.12 60);
-  --chart-5: oklch(0.78 0.11 85);
+  --chart-1: oklch(0.70 0.18 250);
+  --chart-2: oklch(0.68 0.19 300);
+  --chart-3: oklch(0.78 0.14 195);
+  --chart-4: oklch(0.80 0.17 85);
+  --chart-5: oklch(0.65 0.20 20);
 
-  --sidebar: oklch(0.99 0.003 90);
-  --sidebar-foreground: oklch(0.22 0.02 60);
-  --sidebar-primary: oklch(0.72 0.13 82);
-  --sidebar-primary-foreground: oklch(0.99 0.003 90);
-  --sidebar-accent: oklch(0.95 0.02 85);
-  --sidebar-accent-foreground: oklch(0.22 0.02 60);
-  --sidebar-border: oklch(0.72 0.13 82 / 0.25);
-  --sidebar-ring: oklch(0.72 0.13 82);
+  --sidebar: oklch(0.18 0.025 260);
+  --sidebar-foreground: oklch(0.95 0.005 250);
+  --sidebar-primary: oklch(0.72 0.17 262);
+  --sidebar-primary-foreground: oklch(0.14 0.02 260);
+  --sidebar-accent: oklch(0.26 0.03 262);
+  --sidebar-accent-foreground: oklch(0.98 0.005 250);
+  --sidebar-border: oklch(1 0 0 / 0.08);
+  --sidebar-ring: oklch(0.72 0.17 262);
 
-  --gradient-brand: linear-gradient(135deg, oklch(0.78 0.13 88), oklch(0.68 0.15 72) 55%, oklch(0.60 0.13 60));
-  --gradient-surface: linear-gradient(160deg, oklch(1 0 0 / 0.9), oklch(0.96 0.02 85 / 0.75));
-  --shadow-glow: 0 30px 80px -30px oklch(0.68 0.15 72 / 0.35);
-
-  /* Ceramic crack overlay - fine gold fissures on porcelain */
-  --ceramic-cracks:
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800'><g fill='none' stroke='%23b8893a' stroke-width='0.6' stroke-opacity='0.35'><path d='M0 120 L180 200 L320 160 L520 280 L680 240 L800 340'/><path d='M180 200 L220 380 L120 520 L260 660 L200 800'/><path d='M320 160 L360 340 L500 420 L460 600 L620 720'/><path d='M520 280 L640 440 L760 500'/><path d='M120 520 L0 580'/><path d='M500 420 L380 540 L440 700'/><path d='M640 440 L780 620 L720 800'/><path d='M260 660 L440 700 L560 800'/><path d='M60 40 L140 100 L60 260 L0 300'/><path d='M700 60 L620 140 L740 220 L800 180'/></g><g fill='none' stroke='%23a67628' stroke-width='0.3' stroke-opacity='0.25'><path d='M40 300 L120 340 L80 440'/><path d='M420 60 L480 140 L400 220'/><path d='M560 500 L620 580 L540 640'/><path d='M240 380 L300 460'/><path d='M680 240 L720 320'/></g></svg>");
+  --gradient-brand: linear-gradient(135deg, var(--brand-blue), var(--brand-purple) 55%, var(--brand-teal));
+  --gradient-surface: linear-gradient(160deg, oklch(0.22 0.03 262 / 0.6), oklch(0.18 0.03 275 / 0.35));
+  --shadow-glow: 0 30px 80px -30px oklch(0.55 0.22 270 / 0.55);
 }
 
 .dark {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 @layer base {
-  html { color-scheme: light; }
+  html { color-scheme: dark; }
   body {
-    background:
-      var(--ceramic-cracks),
-      radial-gradient(1200px 700px at 15% -10%, oklch(0.88 0.09 88 / 0.35), transparent 60%),
-      radial-gradient(1000px 600px at 100% 0%, oklch(0.92 0.06 82 / 0.40), transparent 55%),
-      radial-gradient(900px 500px at 50% 120%, oklch(0.85 0.10 78 / 0.25), transparent 60%),
-      var(--color-background);
-    background-size: 800px 800px, auto, auto, auto, auto;
+    background: radial-gradient(1200px 700px at 15% -10%, oklch(0.30 0.11 265 / 0.35), transparent 60%),
+                radial-gradient(1000px 600px at 100% 0%, oklch(0.32 0.11 300 / 0.28), transparent 55%),
+                radial-gradient(900px 500px at 50% 120%, oklch(0.32 0.10 195 / 0.20), transparent 60%),
+                var(--color-background);
     color: var(--color-foreground);
     min-height: 100vh;
   }
@@ -131,29 +123,11 @@
 }
 
 @utility glass-card {
-  position: relative;
   background: var(--gradient-surface);
-  border: 1px solid oklch(0.72 0.13 82 / 0.30);
+  border: 1px solid oklch(1 0 0 / 0.08);
   backdrop-filter: blur(24px) saturate(140%);
   border-radius: var(--radius-xl);
-  box-shadow:
-    0 1px 0 oklch(1 0 0 / 0.9) inset,
-    0 20px 60px -30px oklch(0.60 0.10 60 / 0.25),
-    0 0 0 1px oklch(1 0 0 / 0.4) inset;
-  overflow: hidden;
-}
-@utility glass-card {
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: var(--ceramic-cracks);
-    background-size: 600px 600px;
-    opacity: 0.5;
-    pointer-events: none;
-    mix-blend-mode: multiply;
-  }
-  & > * { position: relative; z-index: 1; }
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.05) inset, 0 20px 60px -30px oklch(0 0 0 / 0.6);
 }
 
 @utility gradient-text {
