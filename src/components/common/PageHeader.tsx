@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-4 mb-6">
       <div>
