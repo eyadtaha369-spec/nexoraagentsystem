@@ -1,128 +1,117 @@
-import { API_CONFIG, type ApiAction } from "@/config/api";
-import { session } from "./session";
+import { mockDelay, request } from "./apiClient";
+import { storage } from "./storage";
+import type { User } from "@/types/domain";
 
-/**
- * Real HTTP client for the Google Apps Script backend.
- *
- * Every service in this app calls `request()`. There is no mock layer.
- * Google Apps Script Web Apps use a single URL and route by `action`
- * inside the POST body. We use `text/plain` content-type to avoid the
- * CORS preflight (Apps Script does not respond to OPTIONS).
- */
+const SESSION_KEY = "nexora.session";
+const AGENTS_KEY = "nexora.agents";
 
-export class ApiError extends Error {
-  constructor(
-    public code: "NOT_CONFIGURED" | "HTTP_ERROR" | "API_ERROR" | "TIMEOUT" | "NETWORK" | "UNAUTHORIZED",
-    message: string,
-    public status?: number,
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
+export interface Session {
+  userId: string;
+  token: string;
+  rememberMe: boolean;
+  expiresAt: number;
 }
 
-type UnauthorizedListener = () => void;
-const unauthorizedListeners = new Set<UnauthorizedListener>();
-export function onUnauthorized(fn: UnauthorizedListener) {
-  unauthorizedListeners.add(fn);
-  return () => unauthorizedListeners.delete(fn);
+function loadAgents(): (User & { password?: string })[] {
+  return storage.get(AGENTS_KEY, []);
+}
+function saveAgents(a: (User & { password?: string })[]) {
+  storage.set(AGENTS_KEY, a);
 }
 
-export interface RequestOptions<TData = unknown> {
-  action: ApiAction;
-  data?: TData;
-  signal?: AbortSignal;
-  retries?: number;
-}
-
-interface EnvelopeOk<T> { ok: true; data: T }
-interface EnvelopeErr { ok: false; error: string; code?: string }
-type Envelope<T> = EnvelopeOk<T> | EnvelopeErr;
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function doFetch<T>(opts: RequestOptions): Promise<T> {
-  if (!API_CONFIG.baseUrl) {
-    throw new ApiError(
-      "NOT_CONFIGURED",
-      "Backend URL is not configured. Set VITE_APPS_SCRIPT_URL in your environment.",
-    );
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), API_CONFIG.timeoutMs);
-  const onExternalAbort = () => controller.abort();
-  opts.signal?.addEventListener("abort", onExternalAbort);
-
-  const payload = {
-    action: opts.action,
-    token: session.token(),
-    payload: opts.data ?? null,
-    ts: Date.now(),
-  };
-
-  try {
-    const res = await fetch(API_CONFIG.baseUrl, {
-      method: "POST",
-      // text/plain avoids the CORS preflight Apps Script cannot answer.
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-      redirect: "follow",
+export const authService = {
+  async login(email: string, password: string, rememberMe = false): Promise<{ user: User; session: Session }> {
+    const result = await request<{ token: string; role: string; name: string; email: string }>({
+      action: "login",
+      data: { email, password },
     });
 
-    if (!res.ok) {
-      throw new ApiError("HTTP_ERROR", `Request failed (${res.status})`, res.status);
-    }
+    const user: User = {
+      id: result.email,
+      fullName: result.name,
+      email: result.email,
+      role: result.role.toLowerCase() === "admin" ? "admin" : "agent",
+      status: "Active",
+      createdAt: new Date().toISOString(),
+    };
 
-    let body: Envelope<T>;
-    try {
-      body = (await res.json()) as Envelope<T>;
-    } catch {
-      throw new ApiError("API_ERROR", "Malformed response from server.");
-    }
+    const session: Session = {
+      userId: user.id,
+      token: result.token,
+      rememberMe,
+      expiresAt: Date.now() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000,
+    };
+    storage.set(SESSION_KEY, session);
+    storage.set("nexora.currentUser", user);
+    return { user, session };
+  },
 
-    if (!body.ok) {
-      if (body.code === "UNAUTHORIZED" || /unauth|expired|invalid token/i.test(body.error)) {
-        unauthorizedListeners.forEach((fn) => fn());
-        throw new ApiError("UNAUTHORIZED", body.error || "Session expired.");
-      }
-      throw new ApiError("API_ERROR", body.error || "Request failed.");
+  async me(): Promise<User | null> {
+    const s = storage.get<Session | null>(SESSION_KEY, null);
+    if (!s || Date.now() > s.expiresAt) {
+      if (s) storage.remove(SESSION_KEY);
+      return null;
     }
-    return body.data;
-  } catch (e) {
-    if (e instanceof ApiError) throw e;
-    if ((e as Error).name === "AbortError") {
-      throw new ApiError("TIMEOUT", "The request timed out.");
-    }
-    throw new ApiError("NETWORK", (e as Error).message || "Network error.");
-  } finally {
-    clearTimeout(timer);
-    opts.signal?.removeEventListener("abort", onExternalAbort);
-  }
-}
+    const cachedUser = storage.get<User | null>("nexora.currentUser", null);
+    return cachedUser;
+  },
 
-export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
-  const maxRetries = opts.retries ?? API_CONFIG.retries;
-  let attempt = 0;
-  let lastError: unknown;
-  while (attempt <= maxRetries) {
-    try {
-      return await doFetch<T>(opts);
-    } catch (e) {
-      lastError = e;
-      // Only retry transient failures.
-      if (
-        e instanceof ApiError &&
-        (e.code === "NETWORK" || e.code === "TIMEOUT" || (e.code === "HTTP_ERROR" && (e.status ?? 0) >= 500))
-      ) {
-        attempt++;
-        if (attempt > maxRetries) break;
-        await sleep(API_CONFIG.retryBackoffMs * attempt);
-        continue;
-      }
-      throw e;
-    }
-  }
-  throw lastError;
-}
+  async logout(): Promise<void> {
+    storage.remove(SESSION_KEY);
+    storage.remove("nexora.currentUser");
+    await mockDelay(null, 100);
+  },
+
+  async listAgents(): Promise<User[]> {
+    return mockDelay(loadAgents().map(({ password: _p, ...u }) => u));
+  },
+
+  async createAgent(input: {
+    fullName: string; email: string; phone?: string;
+    password: string; avatarUrl?: string; status?: "Active" | "Disabled";
+  }): Promise<User> {
+    await mockDelay(null, 400);
+    const agents = loadAgents();
+    if (agents.some((a) => a.email.toLowerCase() === input.email.toLowerCase()))
+      throw new Error("An agent with that email already exists.");
+    const user: User & { password: string } = {
+      id: crypto.randomUUID(),
+      fullName: input.fullName.trim(),
+      email: input.email.trim(),
+      phone: input.phone?.trim(),
+      avatarUrl: input.avatarUrl,
+      role: "agent",
+      status: input.status ?? "Active",
+      createdAt: new Date().toISOString(),
+      password: input.password,
+    };
+    agents.push(user);
+    saveAgents(agents);
+    const { password: _p, ...safe } = user;
+    return safe;
+  },
+
+  async updateAgent(id: string, patch: Partial<User> & { password?: string }): Promise<User> {
+    await mockDelay(null, 300);
+    const agents = loadAgents();
+    const idx = agents.findIndex((a) => a.id === id);
+    if (idx < 0) throw new Error("Agent not found.");
+    agents[idx] = { ...agents[idx], ...patch };
+    saveAgents(agents);
+    const { password: _p, ...safe } = agents[idx];
+    return safe;
+  },
+
+  async setStatus(id: string, status: "Active" | "Disabled") {
+    return this.updateAgent(id, { status });
+  },
+
+  async deleteAgent(id: string): Promise<void> {
+    await mockDelay(null, 300);
+    saveAgents(loadAgents().filter((a) => a.id !== id));
+  },
+
+  async resetPassword(id: string, newPassword: string) {
+    return this.updateAgent(id, { password: newPassword });
+  },
+};
