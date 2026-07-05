@@ -2,7 +2,7 @@
 // Set VITE_APPS_SCRIPT_URL in .env once your Google Apps Script Web App is deployed.
 
 export const API_CONFIG = {
-  baseUrl: "https://script.google.com/macros/s/AKfycbxwsMV5vEc1di_6zdbzsljoP4_hr_-sXfU9IHiGN1i5frwTUp0UG_vmXzFhkRw3ZFQ/exec",
+  baseUrl: "https://script.google.com/macros/s/AKfycbyF_gcNQmKtC3ofTNIUt_KSaJVTVO3Db1XhWofvbAmRHcBf5O6LBUGqkv6MF020OIgoVw/exec",
   spreadsheetId: (import.meta.env.VITE_SPREADSHEET_ID as string | undefined)?.trim() ?? "",
   environment: (import.meta.env.MODE as string) ?? "development",
   timeoutMs: 20_000,
