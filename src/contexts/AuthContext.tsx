@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { authService } from "@/services/authService";
+import { onUnauthorized } from "@/services/apiClient";
+import { session } from "@/services/session";
 import type { User } from "@/types/domain";
 
 interface AuthState {
@@ -21,10 +23,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   }, []);
 
+  // Initial session hydration + auto-logout on 401 + cross-tab sync.
   useEffect(() => {
     (async () => {
       try { await refresh(); } finally { setLoading(false); }
     })();
+    const off401 = onUnauthorized(() => {
+      session.clear();
+      setUser(null);
+    });
+    const offSess = session.subscribe((s) => { if (!s) setUser(null); });
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key.startsWith("nexora.session")) refresh();
+    };
+    window.addEventListener("storage", onStorage);
+    return () => {
+      off401();
+      offSess();
+      window.removeEventListener("storage", onStorage);
+    };
   }, [refresh]);
 
   const login = useCallback(async (email: string, password: string, remember = false) => {

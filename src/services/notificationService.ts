@@ -1,32 +1,23 @@
-import { storage } from "./storage";
-import { mockDelay } from "./apiClient";
+import { ACTIONS } from "@/config/api";
+import { request } from "./apiClient";
 import type { AppNotification } from "@/types/domain";
-
-const KEY = "nexora.notifications";
-const load = (): AppNotification[] => storage.get(KEY, []);
-const save = (n: AppNotification[]) => storage.set(KEY, n);
 
 export const notificationService = {
   async list(): Promise<AppNotification[]> {
-    return mockDelay(load());
+    return request<AppNotification[]>({ action: ACTIONS.notificationsList });
   },
   async unreadCount(): Promise<number> {
-    return load().filter((n) => !n.read).length;
+    try {
+      const r = await request<{ count: number }>({ action: ACTIONS.notificationsUnread });
+      return r.count;
+    } catch {
+      return 0;
+    }
   },
-  async markRead(id: string) {
-    const list = load();
-    const n = list.find((x) => x.id === id);
-    if (n) n.read = true;
-    save(list);
+  async markRead(id: string): Promise<void> {
+    await request({ action: ACTIONS.notificationsMarkRead, data: { id } });
   },
-  async markAllRead() {
-    save(load().map((n) => ({ ...n, read: true })));
-  },
-  push(input: Omit<AppNotification, "id" | "createdAt" | "read">) {
-    const n: AppNotification = { ...input, id: crypto.randomUUID(), createdAt: new Date().toISOString(), read: false };
-    const list = load();
-    list.unshift(n);
-    save(list.slice(0, 200));
-    return n;
+  async markAllRead(): Promise<void> {
+    await request({ action: ACTIONS.notificationsMarkAllRead });
   },
 };
