@@ -1,18 +1,6 @@
 import { API_CONFIG } from "@/config/api";
 import { session } from "./session";
 
-/**
- * Centralized API client. Every request goes to the single Apps Script
- * Web App URL, routed by an `action` name in the JSON body.
- *
- * IMPORTANT: Content-Type must be "text/plain", NOT "application/json".
- * Google Apps Script Web Apps cannot respond to CORS preflight (OPTIONS)
- * requests. Using application/json forces the browser to send a preflight
- * first, which Apps Script can't answer, causing "Failed to fetch" / CORS
- * errors. text/plain is a "simple request" so no preflight is sent, and
- * Apps Script still parses the JSON fine from e.postData.contents.
- */
-
 export class ApiError extends Error {
   constructor(public code: string, message: string, public status?: number) {
     super(message);
@@ -29,6 +17,17 @@ export interface RequestOptions {
   method?: HttpMethod;
   data?: unknown;
   signal?: AbortSignal;
+}
+
+const unauthorizedListeners = new Set<() => void>();
+
+export function onUnauthorized(fn: () => void): () => void {
+  unauthorizedListeners.add(fn);
+  return () => unauthorizedListeners.delete(fn);
+}
+
+function notifyUnauthorized() {
+  unauthorizedListeners.forEach((fn) => fn());
 }
 
 export async function request<T>({ action, method = "POST", data, signal }: RequestOptions): Promise<T> {
@@ -51,6 +50,11 @@ export async function request<T>({ action, method = "POST", data, signal }: Requ
       signal: controller.signal,
     });
 
+    if (res.status === 401) {
+      notifyUnauthorized();
+      throw new ApiError("UNAUTHORIZED", "Session expired", 401);
+    }
+
     if (!res.ok) {
       throw new ApiError("HTTP_ERROR", `Request failed (${res.status})`, res.status);
     }
@@ -58,6 +62,9 @@ export async function request<T>({ action, method = "POST", data, signal }: Requ
     const body = (await res.json()) as { ok: boolean; data?: T; error?: string };
 
     if (!body.ok) {
+      if (body.error === "UNAUTHORIZED" || body.error === "Invalid or expired token") {
+        notifyUnauthorized();
+      }
       throw new ApiError("API_ERROR", body.error ?? "Unknown error");
     }
 
