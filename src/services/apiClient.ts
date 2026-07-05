@@ -1,117 +1,73 @@
-import { mockDelay, request } from "./apiClient";
-import { storage } from "./storage";
-import type { User } from "@/types/domain";
+import { API_CONFIG } from "@/config/api";
+import { session } from "./session";
 
-const SESSION_KEY = "nexora.session";
-const AGENTS_KEY = "nexora.agents";
+/**
+ * Centralized API client. Every request goes to the single Apps Script
+ * Web App URL, routed by an `action` name in the JSON body.
+ *
+ * IMPORTANT: Content-Type must be "text/plain", NOT "application/json".
+ * Google Apps Script Web Apps cannot respond to CORS preflight (OPTIONS)
+ * requests. Using application/json forces the browser to send a preflight
+ * first, which Apps Script can't answer, causing "Failed to fetch" / CORS
+ * errors. text/plain is a "simple request" so no preflight is sent, and
+ * Apps Script still parses the JSON fine from e.postData.contents.
+ */
 
-export interface Session {
-  userId: string;
-  token: string;
-  rememberMe: boolean;
-  expiresAt: number;
+export class ApiError extends Error {
+  constructor(public code: string, message: string, public status?: number) {
+    super(message);
+  }
 }
 
-function loadAgents(): (User & { password?: string })[] {
-  return storage.get(AGENTS_KEY, []);
-}
-function saveAgents(a: (User & { password?: string })[]) {
-  storage.set(AGENTS_KEY, a);
+export const mockDelay = <T,>(value: T, ms = 300): Promise<T> =>
+  new Promise((resolve) => setTimeout(() => resolve(value), ms));
+
+export type HttpMethod = "GET" | "POST";
+
+export interface RequestOptions {
+  action: string;
+  method?: HttpMethod;
+  data?: unknown;
+  signal?: AbortSignal;
 }
 
-export const authService = {
-  async login(email: string, password: string, rememberMe = false): Promise<{ user: User; session: Session }> {
-    const result = await request<{ token: string; role: string; name: string; email: string }>({
-      action: "login",
-      data: { email, password },
+export async function request<T>({ action, method = "POST", data, signal }: RequestOptions): Promise<T> {
+  if (!API_CONFIG.baseUrl) {
+    throw new ApiError("NOT_CONFIGURED", `Backend not configured (action=${action})`);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), API_CONFIG.timeoutMs);
+  const onExternalAbort = () => controller.abort();
+  signal?.addEventListener("abort", onExternalAbort);
+
+  const token = session.token();
+
+  try {
+    const res = await fetch(API_CONFIG.baseUrl, {
+      method,
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action, token, payload: data ?? null }),
+      signal: controller.signal,
     });
 
-    const user: User = {
-      id: result.email,
-      fullName: result.name,
-      email: result.email,
-      role: result.role.toLowerCase() === "admin" ? "admin" : "agent",
-      status: "Active",
-      createdAt: new Date().toISOString(),
-    };
-
-    const session: Session = {
-      userId: user.id,
-      token: result.token,
-      rememberMe,
-      expiresAt: Date.now() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000,
-    };
-    storage.set(SESSION_KEY, session);
-    storage.set("nexora.currentUser", user);
-    return { user, session };
-  },
-
-  async me(): Promise<User | null> {
-    const s = storage.get<Session | null>(SESSION_KEY, null);
-    if (!s || Date.now() > s.expiresAt) {
-      if (s) storage.remove(SESSION_KEY);
-      return null;
+    if (!res.ok) {
+      throw new ApiError("HTTP_ERROR", `Request failed (${res.status})`, res.status);
     }
-    const cachedUser = storage.get<User | null>("nexora.currentUser", null);
-    return cachedUser;
-  },
 
-  async logout(): Promise<void> {
-    storage.remove(SESSION_KEY);
-    storage.remove("nexora.currentUser");
-    await mockDelay(null, 100);
-  },
+    const body = (await res.json()) as { ok: boolean; data?: T; error?: string };
 
-  async listAgents(): Promise<User[]> {
-    return mockDelay(loadAgents().map(({ password: _p, ...u }) => u));
-  },
+    if (!body.ok) {
+      throw new ApiError("API_ERROR", body.error ?? "Unknown error");
+    }
 
-  async createAgent(input: {
-    fullName: string; email: string; phone?: string;
-    password: string; avatarUrl?: string; status?: "Active" | "Disabled";
-  }): Promise<User> {
-    await mockDelay(null, 400);
-    const agents = loadAgents();
-    if (agents.some((a) => a.email.toLowerCase() === input.email.toLowerCase()))
-      throw new Error("An agent with that email already exists.");
-    const user: User & { password: string } = {
-      id: crypto.randomUUID(),
-      fullName: input.fullName.trim(),
-      email: input.email.trim(),
-      phone: input.phone?.trim(),
-      avatarUrl: input.avatarUrl,
-      role: "agent",
-      status: input.status ?? "Active",
-      createdAt: new Date().toISOString(),
-      password: input.password,
-    };
-    agents.push(user);
-    saveAgents(agents);
-    const { password: _p, ...safe } = user;
-    return safe;
-  },
-
-  async updateAgent(id: string, patch: Partial<User> & { password?: string }): Promise<User> {
-    await mockDelay(null, 300);
-    const agents = loadAgents();
-    const idx = agents.findIndex((a) => a.id === id);
-    if (idx < 0) throw new Error("Agent not found.");
-    agents[idx] = { ...agents[idx], ...patch };
-    saveAgents(agents);
-    const { password: _p, ...safe } = agents[idx];
-    return safe;
-  },
-
-  async setStatus(id: string, status: "Active" | "Disabled") {
-    return this.updateAgent(id, { status });
-  },
-
-  async deleteAgent(id: string): Promise<void> {
-    await mockDelay(null, 300);
-    saveAgents(loadAgents().filter((a) => a.id !== id));
-  },
-
-  async resetPassword(id: string, newPassword: string) {
-    return this.updateAgent(id, { password: newPassword });
-  },
-};
+    return body.data as T;
+  } catch (e) {
+    if (e instanceof ApiError) throw e;
+    if ((e as Error).name === "AbortError") throw new ApiError("TIMEOUT", "Request timed out");
+    throw new ApiError("NETWORK", (e as Error).message ?? "Network error");
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener("abort", onExternalAbort);
+  }
+}
