@@ -9,11 +9,13 @@ import { TableSkeleton } from "@/components/common/TableSkeleton";
 import { StatusBadge, PriorityBadge } from "@/components/common/Badges";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 import type { Lead, LeadPriority, LeadStatus, User } from "@/types/domain";
-import { Copy, Eye, MapPin, MessageSquare, Phone, Plus, Facebook, Instagram } from "lucide-react";
+import { Copy, Eye, MapPin, MessageSquare, Phone, Plus, Facebook, Instagram, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_app/leads")({
   ssr: false,
@@ -22,6 +24,15 @@ export const Route = createFileRoute("/_app/leads")({
 });
 
 const PAGE_SIZE = 20;
+
+const STATUSES: LeadStatus[] = ["New","Contacted","Interested","Follow Up","Won","Lost","No Answer","Wrong Number"];
+const PRIORITIES: LeadPriority[] = ["High","Medium","Low"];
+
+const EMPTY_FORM = {
+  clientName: "", phone: "", mapsLink: "", instagram: "", facebook: "",
+  status: "New" as LeadStatus, priority: "Medium" as LeadPriority,
+  source: "", assignedAgentId: "" as string,
+};
 
 function LeadsPage() {
   const { user } = useAuth();
@@ -37,24 +48,28 @@ function LeadsPage() {
   const [page, setPage] = useState(1);
   const debounced = useDebounce(search, 250);
 
-  useEffect(() => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+
+  async function load() {
     if (!user) return;
-    (async () => {
-      setLoading(true);
-      const filters: LeadFilters = {
-        status: statusFilter === "all" ? undefined : [statusFilter],
-        priority: prioFilter === "all" ? undefined : [prioFilter],
-        agentId: user.role === "admin" ? (agentFilter === "all" ? undefined : agentFilter) : user.id,
-        search: debounced || undefined,
-      };
-      const [l, a] = await Promise.all([
-        leadService.list(filters, sort),
-        user.role === "admin" ? authService.listAgents() : Promise.resolve<User[]>([]),
-      ]);
-      setLeads(l); setAgents(a);
-      setLoading(false);
-    })();
-  }, [user, debounced, statusFilter, prioFilter, agentFilter, sort]);
+    setLoading(true);
+    const filters: LeadFilters = {
+      status: statusFilter === "all" ? undefined : [statusFilter],
+      priority: prioFilter === "all" ? undefined : [prioFilter],
+      agentId: user.role === "admin" ? (agentFilter === "all" ? undefined : agentFilter) : user.id,
+      search: debounced || undefined,
+    };
+    const [l, a] = await Promise.all([
+      leadService.list(filters, sort),
+      user.role === "admin" ? authService.listAgents() : Promise.resolve<User[]>([]),
+    ]);
+    setLeads(l); setAgents(a);
+    setLoading(false);
+  }
+
+  useEffect(() => { load(); }, [user, debounced, statusFilter, prioFilter, agentFilter, sort]);
 
   const pageLeads = useMemo(() => leads.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [leads, page]);
   const totalPages = Math.max(1, Math.ceil(leads.length / PAGE_SIZE));
@@ -65,6 +80,42 @@ function LeadsPage() {
     toast.success("Phone copied");
   }
 
+  function openModal() {
+    setForm(EMPTY_FORM);
+    setModalOpen(true);
+  }
+
+  async function submitLead() {
+    if (!form.clientName.trim() || !form.phone.trim()) {
+      toast.error("Client name and phone are required.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await leadService.create({
+        clientName: form.clientName.trim(),
+        phone: form.phone.trim(),
+        mapsLink: form.mapsLink.trim() || undefined,
+        instagram: form.instagram.trim() || undefined,
+        facebook: form.facebook.trim() || undefined,
+        status: form.status,
+        priority: form.priority,
+        source: form.source.trim() || undefined,
+        assignedAgentId: form.assignedAgentId || null,
+        nextFollowUp: null,
+        followUpNote: "",
+      } as any);
+      toast.success("Lead created");
+      setModalOpen(false);
+      setPage(1);
+      await load();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to create lead.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -72,7 +123,7 @@ function LeadsPage() {
         title="Leads"
         description={user?.role === "admin" ? "All leads across your organization." : "Your assigned leads."}
         actions={user?.role === "admin" ? (
-          <Button className="btn-brand hover:btn-brand-hover border-0 gap-2" onClick={() => toast.info("Create-lead modal is scaffolded — wire once backend is ready.")}>
+          <Button className="btn-brand hover:btn-brand-hover border-0 gap-2" onClick={openModal}>
             <Plus className="h-4 w-4" /> New lead
           </Button>
         ) : null}
@@ -84,7 +135,7 @@ function LeadsPage() {
           <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            {(["New","Contacted","Interested","Follow Up","Won","Lost","No Answer","Wrong Number"] as LeadStatus[]).map((s) => (
+            {STATUSES.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
           </SelectContent>
@@ -93,7 +144,7 @@ function LeadsPage() {
           <SelectTrigger className="w-36"><SelectValue placeholder="Priority" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All priorities</SelectItem>
-            {(["High","Medium","Low"] as LeadPriority[]).map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            {PRIORITIES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
           </SelectContent>
         </Select>
         {user?.role === "admin" && (
@@ -125,7 +176,7 @@ function LeadsPage() {
         <EmptyState
           title="No leads yet"
           description="Import leads from Google Sheets, upload a CSV, or create your first lead manually."
-          action={<Button variant="outline">Import leads</Button>}
+          action={user?.role === "admin" ? <Button onClick={openModal} className="btn-brand hover:btn-brand-hover border-0">New lead</Button> : undefined}
         />
       ) : (
         <div className="glass-card overflow-hidden">
@@ -182,6 +233,87 @@ function LeadsPage() {
           </div>
         </div>
       )}
+
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New lead</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="clientName">Client name *</Label>
+                <Input id="clientName" value={form.clientName} onChange={(e) => setForm((f) => ({ ...f, clientName: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="phone">Phone *</Label>
+                <Input id="phone" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v as LeadStatus }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Priority</Label>
+                <Select value={form.priority} onValueChange={(v) => setForm((f) => ({ ...f, priority: v as LeadPriority }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRIORITIES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {agents.length > 0 && (
+              <div className="space-y-1.5">
+                <Label>Assign to agent</Label>
+                <Select value={form.assignedAgentId || "unassigned"} onValueChange={(v) => setForm((f) => ({ ...f, assignedAgentId: v === "unassigned" ? "" : v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {agents.map((a) => <SelectItem key={a.id} value={a.id}>{a.fullName}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="source">Source</Label>
+              <Input id="source" placeholder="e.g. Facebook ad, referral, website" value={form.source} onChange={(e) => setForm((f) => ({ ...f, source: e.target.value }))} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="mapsLink">Google Maps</Label>
+                <Input id="mapsLink" value={form.mapsLink} onChange={(e) => setForm((f) => ({ ...f, mapsLink: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="instagram">Instagram</Label>
+                <Input id="instagram" value={form.instagram} onChange={(e) => setForm((f) => ({ ...f, instagram: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="facebook">Facebook</Label>
+                <Input id="facebook" value={form.facebook} onChange={(e) => setForm((f) => ({ ...f, facebook: e.target.value }))} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button onClick={submitLead} disabled={submitting} className="btn-brand hover:btn-brand-hover border-0">
+              {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating…</> : "Create lead"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
