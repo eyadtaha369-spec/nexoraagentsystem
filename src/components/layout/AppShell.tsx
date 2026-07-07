@@ -76,8 +76,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <div className="mt-auto pt-6">
             <Link to="/profile" className="glass-card p-3 flex items-center gap-3 hover:bg-accent/30 transition-colors">
-              <div className="h-9 w-9 rounded-full grid place-items-center text-sm font-semibold shrink-0" style={{ background: "var(--gradient-brand)" }}>
-                {user?.fullName?.slice(0,1).toUpperCase() ?? "?"}
+              <div className="h-9 w-9 rounded-full grid place-items-center text-sm font-semibold shrink-0 overflow-hidden" style={{ background: "var(--gradient-brand)" }}>
+                {user?.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.fullName} className="h-full w-full object-cover" />
+                ) : (
+                  user?.fullName?.slice(0,1).toUpperCase() ?? "?"
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{user?.fullName}</div>
@@ -143,3 +147,4 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
