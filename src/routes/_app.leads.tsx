@@ -81,7 +81,7 @@ function LeadsPage() {
   }
 
   function openModal() {
-    setForm(EMPTY_FORM);
+    setForm({ ...EMPTY_FORM, assignedAgentId: user?.role === "agent" ? user.id : "" });
     setModalOpen(true);
   }
 
@@ -122,11 +122,11 @@ function LeadsPage() {
         eyebrow="Pipeline"
         title="Leads"
         description={user?.role === "admin" ? "All leads across your organization." : "Your assigned leads."}
-        actions={user?.role === "admin" ? (
+        actions={
           <Button className="btn-brand hover:btn-brand-hover border-0 gap-2" onClick={openModal}>
             <Plus className="h-4 w-4" /> New lead
           </Button>
-        ) : null}
+        }
       />
 
       <div className="glass-card p-4 flex flex-wrap items-center gap-3">
@@ -176,7 +176,7 @@ function LeadsPage() {
         <EmptyState
           title="No leads yet"
           description="Import leads from Google Sheets, upload a CSV, or create your first lead manually."
-          action={user?.role === "admin" ? <Button onClick={openModal} className="btn-brand hover:btn-brand-hover border-0">New lead</Button> : undefined}
+          action={<Button onClick={openModal} className="btn-brand hover:btn-brand-hover border-0">New lead</Button>}
         />
       ) : (
         <div className="glass-card overflow-hidden">
