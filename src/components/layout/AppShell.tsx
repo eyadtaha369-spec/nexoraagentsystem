@@ -9,6 +9,7 @@ import {
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { notificationService } from "@/services/notificationService";
+import { settingsService } from "@/services/settingsService";
 
 const ALL_NAV: { to: string; label: string; icon: ReactNode; adminOnly?: boolean }[] = [
   { to: "/dashboard",       label: "Dashboard",   icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -29,6 +30,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [unread, setUnread] = useState(0);
+  const [logoUrl, setLogoUrl] = useState<string>("");
+
+  useEffect(() => {
+    settingsService.get().then((s) => setLogoUrl((s as any).companyLogoUrl || "")).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -51,7 +57,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="grid grid-cols-1 md:grid-cols-[260px_1fr]">
         <aside className="hidden md:flex flex-col gap-1 border-r border-border/60 bg-sidebar/50 backdrop-blur-xl px-4 py-6 min-h-screen sticky top-0">
           <Link to="/dashboard" className="flex items-center gap-2 px-2 pb-6">
-            <div className="h-9 w-9 rounded-xl btn-brand grid place-items-center text-lg font-bold">N</div>
+            <div className="h-9 w-9 rounded-xl btn-brand grid place-items-center text-lg font-bold overflow-hidden">
+              {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain bg-white" /> : "N"}
+            </div>
             <div>
               <div className="text-lg font-semibold leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 Nexora <span className="gradient-text">CRM</span>
@@ -97,7 +105,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-border/60 bg-sidebar/60 backdrop-blur-xl px-4 md:px-8 py-3">
             <div className="md:hidden flex items-center gap-2">
               <Link to="/dashboard" className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg btn-brand grid place-items-center text-sm font-bold">N</div>
+                <div className="h-8 w-8 rounded-lg btn-brand grid place-items-center text-sm font-bold overflow-hidden">
+                  {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain bg-white" /> : "N"}
+                </div>
                 <span className="font-semibold">Nexora</span>
               </Link>
             </div>
