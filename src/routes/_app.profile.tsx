@@ -16,13 +16,33 @@ export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
 
-function fileToBase64(file: File): Promise<{ base64: string; mimeType: string }> {
+function resizeImageToBase64(file: File, maxDimension = 800, quality = 0.8): Promise<{ base64: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
+    const img = new Image();
     const reader = new FileReader();
     reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1];
-      resolve({ base64, mimeType: file.type });
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported"));
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve({ base64: dataUrl.split(",")[1], mimeType: "image/jpeg" });
+      };
+      img.onerror = () => reject(new Error("Could not load image"));
+      img.src = reader.result as string;
     };
     reader.onerror = () => reject(new Error("Could not read file"));
     reader.readAsDataURL(file);
@@ -43,13 +63,13 @@ function ProfilePage() {
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error("Please choose an image under 4MB.");
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Please choose an image under 15MB.");
       return;
     }
     setUploading(true);
     try {
-      const { base64, mimeType } = await fileToBase64(file);
+      const { base64, mimeType } = await resizeImageToBase64(file);
       const res = await request<{ url: string }>({
         action: "media.upload",
         data: { imageBase64: base64, mimeType, target: "avatar", userId: user.id },
