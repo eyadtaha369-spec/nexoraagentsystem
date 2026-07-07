@@ -5,7 +5,7 @@ export const API_CONFIG = {
   baseUrl: "https://script.google.com/macros/s/AKfycbyF_gcNQmKtC3ofTNIUt_KSaJVTVO3Db1XhWofvbAmRHcBf5O6LBUGqkv6MF020OIgoVw/exec",
   spreadsheetId: (import.meta.env.VITE_SPREADSHEET_ID as string | undefined)?.trim() ?? "",
   environment: (import.meta.env.MODE as string) ?? "development",
-  timeoutMs: 20_000,
+  timeoutMs: 45_000,
   retries: 2,
   retryBackoffMs: 400,
 } as const;
