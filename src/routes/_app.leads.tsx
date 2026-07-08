@@ -81,7 +81,7 @@ function LeadsPage() {
   }
 
   function openModal() {
-    setForm({ ...EMPTY_FORM, assignedAgentId: user?.role === "agent" ? user.id : "" });
+    setForm(EMPTY_FORM);
     setModalOpen(true);
   }
 
