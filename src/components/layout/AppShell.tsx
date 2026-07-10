@@ -4,7 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, Users, Contact, Settings, LogOut, Bell, Sun, Moon,
-  BarChart3, FileText, Calendar, Trophy, CalendarClock, UserCircle, Activity, Search,
+  BarChart3, FileText, Calendar, Trophy, CalendarClock, UserCircle, Activity, Search, Briefcase,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -21,6 +21,7 @@ const ALL_NAV: { to: string; label: string; icon: ReactNode; adminOnly?: boolean
   { to: "/leaderboard",     label: "Leaderboard", icon: <Trophy className="h-4 w-4" /> },
   { to: "/agents",          label: "Agents",      icon: <Users className="h-4 w-4" />, adminOnly: true },
   { to: "/activity",        label: "Activity",    icon: <Activity className="h-4 w-4" />, adminOnly: true },
+  { to: "/portfolio",       label: "Portfolio",   icon: <Briefcase className="h-4 w-4" />, adminOnly: true },
   { to: "/settings",        label: "Settings",    icon: <Settings className="h-4 w-4" />, adminOnly: true },
 ];
 
