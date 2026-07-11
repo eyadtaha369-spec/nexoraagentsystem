@@ -3,7 +3,6 @@ import { authService } from "@/services/authService";
 import { onUnauthorized } from "@/services/apiClient";
 import { session } from "@/services/session";
 import type { User } from "@/types/domain";
-import { toast } from "sonner";
 
 interface AuthState {
   user: User | null;
@@ -19,37 +18,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    // TEMP DEBUG
-    toast.info("DEBUG: refresh() called, checking session...");
     const u = await authService.me();
-    // TEMP DEBUG
-    toast.info(`DEBUG: refresh() result: ${u ? "user found (" + u.email + ")" : "NULL"}`);
     setUser(u);
   }, []);
 
+  // Initial session hydration + auto-logout on 401 + cross-tab sync.
   useEffect(() => {
     (async () => {
       try { await refresh(); } finally { setLoading(false); }
     })();
     const off401 = onUnauthorized(() => {
-      // TEMP DEBUG
-      toast.error("DEBUG: onUnauthorized FIRED — this is clearing your session!");
       session.clear();
       setUser(null);
     });
-    const offSess = session.subscribe((s) => {
-      if (!s) {
-        // TEMP DEBUG
-        toast.error("DEBUG: session.subscribe saw NULL — clearing user state");
-        setUser(null);
-      }
-    });
+    const offSess = session.subscribe((s) => { if (!s) setUser(null); });
     const onStorage = (e: StorageEvent) => {
-      if (e.key && e.key.startsWith("nexora.session")) {
-        // TEMP DEBUG
-        toast.info("DEBUG: storage event triggered refresh()");
-        refresh();
-      }
+      if (e.key && e.key.startsWith("nexora.session")) refresh();
     };
     window.addEventListener("storage", onStorage);
     return () => {
