@@ -101,7 +101,9 @@ function LeadsPage() {
         status: form.status,
         priority: form.priority,
         source: form.source.trim() || undefined,
-        assignedAgentId: form.assignedAgentId || null,
+        // Agents always get assigned to their own leads — never left unassigned.
+        // Admins keep whatever they picked (or none, to let round-robin decide).
+        assignedAgentId: user?.role === "agent" ? user.id : (form.assignedAgentId || null),
         nextFollowUp: null,
         followUpNote: "",
       } as any);
