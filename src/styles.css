@@ -50,89 +50,126 @@
   --color-brand-teal: var(--brand-teal);
 }
 
-/* Bold, near-black CRM palette — vivid blue → violet → magenta,
-   matching the metallic chrome logo mark. */
+/* ==========================================================
+   Nexora CRM palette — DARK MODE = Black Marble & Silver
+   (default :root palette, matches the black/gold-veined
+   marble reference image)
+   ========================================================== */
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.10 0.018 265);
-  --foreground: oklch(0.98 0.005 250);
+  --background: oklch(0.07 0.002 260);
+  --foreground: oklch(0.97 0.002 250);
 
-  --card: oklch(0.19 0.03 264 / 0.55);
-  --card-foreground: oklch(0.98 0.005 250);
-  --popover: oklch(0.15 0.03 264);
-  --popover-foreground: oklch(0.98 0.005 250);
+  --card: oklch(0.14 0.005 260 / 0.55);
+  --card-foreground: oklch(0.97 0.002 250);
+  --popover: oklch(0.11 0.004 260);
+  --popover-foreground: oklch(0.97 0.002 250);
 
-  --primary: oklch(0.68 0.23 265);
-  --primary-foreground: oklch(0.10 0.02 260);
+  --primary: oklch(0.82 0.006 260);
+  --primary-foreground: oklch(0.10 0.004 260);
 
-  --secondary: oklch(0.22 0.035 264);
-  --secondary-foreground: oklch(0.98 0.005 250);
+  --secondary: oklch(0.19 0.006 260);
+  --secondary-foreground: oklch(0.96 0.002 250);
 
-  --muted: oklch(0.20 0.03 264);
-  --muted-foreground: oklch(0.72 0.03 258);
+  --muted: oklch(0.17 0.005 260);
+  --muted-foreground: oklch(0.68 0.006 260);
 
-  --accent: oklch(0.28 0.07 268);
-  --accent-foreground: oklch(0.98 0.005 250);
+  --accent: oklch(0.24 0.008 260);
+  --accent-foreground: oklch(0.97 0.002 250);
 
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0.005 250);
 
-  --border: oklch(1 0 0 / 0.09);
-  --input: oklch(1 0 0 / 0.11);
-  --ring: oklch(0.68 0.23 265);
+  --border: oklch(1 0 0 / 0.10);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.82 0.006 260);
 
-  --brand-blue: oklch(0.66 0.22 258);
-  --brand-purple: oklch(0.60 0.27 306);
-  --brand-teal: oklch(0.76 0.18 195);
-  --brand-magenta: oklch(0.64 0.26 340);
+  /* Metallic silver spectrum (kept as the original variable names
+     so existing components/badges/charts don't need to change —
+     only the colors themselves shifted to silver tones) */
+  --brand-blue: oklch(0.80 0.006 260);
+  --brand-purple: oklch(0.60 0.01 265);
+  --brand-teal: oklch(0.88 0.004 250);
+  --brand-magenta: oklch(0.45 0.01 260);
 
-  --chart-1: oklch(0.66 0.22 258);
-  --chart-2: oklch(0.60 0.27 306);
-  --chart-3: oklch(0.76 0.18 195);
-  --chart-4: oklch(0.78 0.19 85);
-  --chart-5: oklch(0.64 0.26 340);
+  --chart-1: oklch(0.85 0.004 250);
+  --chart-2: oklch(0.68 0.008 260);
+  --chart-3: oklch(0.52 0.01 262);
+  --chart-4: oklch(0.36 0.01 262);
+  --chart-5: oklch(0.94 0.002 250);
 
-  --sidebar: oklch(0.11 0.02 262);
-  --sidebar-foreground: oklch(0.96 0.005 250);
-  --sidebar-primary: oklch(0.68 0.23 265);
-  --sidebar-primary-foreground: oklch(0.10 0.02 260);
-  --sidebar-accent: oklch(0.22 0.035 264);
-  --sidebar-accent-foreground: oklch(0.98 0.005 250);
-  --sidebar-border: oklch(1 0 0 / 0.09);
-  --sidebar-ring: oklch(0.68 0.23 265);
+  --sidebar: oklch(0.08 0.003 260);
+  --sidebar-foreground: oklch(0.95 0.002 250);
+  --sidebar-primary: oklch(0.82 0.006 260);
+  --sidebar-primary-foreground: oklch(0.10 0.004 260);
+  --sidebar-accent: oklch(0.19 0.006 260);
+  --sidebar-accent-foreground: oklch(0.97 0.002 250);
+  --sidebar-border: oklch(1 0 0 / 0.10);
+  --sidebar-ring: oklch(0.82 0.006 260);
 
-  --gradient-brand: linear-gradient(135deg, var(--brand-blue), var(--brand-purple) 50%, var(--brand-magenta) 85%);
-  --gradient-surface: linear-gradient(160deg, oklch(0.20 0.035 264 / 0.6), oklch(0.14 0.035 275 / 0.35));
-  --shadow-glow: 0 30px 90px -28px oklch(0.55 0.25 285 / 0.6);
+  --gradient-brand: linear-gradient(135deg, oklch(0.92 0.003 250), oklch(0.62 0.01 262) 55%, oklch(0.40 0.012 262) 100%);
+  --gradient-surface: linear-gradient(160deg, oklch(0.10 0.006 260 / 0.55), oklch(0.05 0.004 260 / 0.55));
+  --shadow-glow: 0 30px 90px -28px oklch(0.85 0.005 260 / 0.35);
 }
 
 .dark { color-scheme: dark; }
 
+/* ==========================================================
+   LIGHT MODE = White Marble & Gold
+   (matches the white/gold-veined marble reference image)
+   ========================================================== */
 .light {
   color-scheme: light;
-  --background: oklch(0.985 0.005 250);
-  --foreground: oklch(0.18 0.02 260);
-  --card: oklch(1 0 0 / 0.75);
-  --card-foreground: oklch(0.18 0.02 260);
+
+  --background: oklch(0.98 0.004 90);
+  --foreground: oklch(0.17 0.012 90);
+
+  --card: oklch(1 0 0 / 0.78);
+  --card-foreground: oklch(0.17 0.012 90);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 260);
-  --primary: oklch(0.55 0.22 265);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0.02 262);
-  --secondary-foreground: oklch(0.20 0.02 260);
-  --muted: oklch(0.94 0.01 262);
-  --muted-foreground: oklch(0.45 0.02 258);
-  --accent: oklch(0.92 0.03 262);
-  --accent-foreground: oklch(0.18 0.02 260);
-  --border: oklch(0.20 0.02 260 / 0.10);
-  --input: oklch(0.20 0.02 260 / 0.12);
-  --sidebar: oklch(0.98 0.005 250);
-  --sidebar-foreground: oklch(0.20 0.02 260);
-  --sidebar-accent: oklch(0.94 0.02 262);
-  --sidebar-accent-foreground: oklch(0.18 0.02 260);
-  --sidebar-border: oklch(0.20 0.02 260 / 0.10);
-  --gradient-surface: linear-gradient(160deg, oklch(1 0 0 / 0.9), oklch(0.97 0.01 262 / 0.6));
+  --popover-foreground: oklch(0.17 0.012 90);
+
+  --primary: oklch(0.70 0.135 83);
+  --primary-foreground: oklch(0.14 0.02 90);
+
+  --secondary: oklch(0.95 0.02 85);
+  --secondary-foreground: oklch(0.20 0.02 90);
+
+  --muted: oklch(0.945 0.015 85);
+  --muted-foreground: oklch(0.46 0.02 88);
+
+  --accent: oklch(0.92 0.035 85);
+  --accent-foreground: oklch(0.18 0.02 90);
+
+  --border: oklch(0.20 0.02 90 / 0.12);
+  --input: oklch(0.20 0.02 90 / 0.14);
+  --ring: oklch(0.70 0.135 83);
+
+  /* Gold / champagne spectrum, same variable names as dark mode */
+  --brand-blue: oklch(0.72 0.14 83);
+  --brand-purple: oklch(0.58 0.13 70);
+  --brand-teal: oklch(0.84 0.08 95);
+  --brand-magenta: oklch(0.48 0.11 60);
+
+  --chart-1: oklch(0.72 0.14 83);
+  --chart-2: oklch(0.60 0.13 72);
+  --chart-3: oklch(0.84 0.08 95);
+  --chart-4: oklch(0.48 0.11 60);
+  --chart-5: oklch(0.90 0.05 90);
+
+  --sidebar: oklch(0.985 0.004 90);
+  --sidebar-foreground: oklch(0.20 0.02 90);
+  --sidebar-primary: oklch(0.70 0.135 83);
+  --sidebar-primary-foreground: oklch(0.14 0.02 90);
+  --sidebar-accent: oklch(0.95 0.02 85);
+  --sidebar-accent-foreground: oklch(0.18 0.02 90);
+  --sidebar-border: oklch(0.20 0.02 90 / 0.12);
+  --sidebar-ring: oklch(0.70 0.135 83);
+
+  --gradient-brand: linear-gradient(135deg, oklch(0.80 0.10 88), oklch(0.68 0.14 80) 55%, oklch(0.52 0.13 65) 100%);
+  --gradient-surface: linear-gradient(160deg, oklch(1 0 0 / 0.85), oklch(0.96 0.03 85 / 0.6));
+  --shadow-glow: 0 30px 90px -28px oklch(0.65 0.14 80 / 0.35);
 }
 
 @layer base {
@@ -146,29 +183,76 @@
   * { border-color: var(--color-border); }
 }
 
-/* Animated "alive" ambient background — a few large, slowly drifting,
-   heavily blurred blobs behind everything. Pure CSS, GPU-accelerated,
-   and dim enough not to interfere with reading tables/data. */
+/* ==========================================================
+   Looping blurred video background — sits behind everything,
+   heavily blurred and dimmed so text stays fully readable.
+   A theme-tinted overlay (gold in light mode, black/silver
+   in dark mode) sits on top of the video for mood + contrast.
+   ========================================================== */
+.app-bg-video-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: -30;
+  overflow: hidden;
+  pointer-events: none;
+}
+.app-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.15);
+  filter: blur(42px) saturate(110%) brightness(0.55);
+  opacity: 0.6;
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+.app-bg-video-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, oklch(0.04 0 0 / 0.72), oklch(0.08 0.006 260 / 0.82));
+}
+
+.light .app-bg-video {
+  filter: blur(46px) saturate(105%) brightness(1.25);
+  opacity: 0.35;
+}
+.light .app-bg-video-overlay {
+  background: linear-gradient(160deg, oklch(1 0 0 / 0.72), oklch(0.95 0.035 85 / 0.75));
+}
+
+/* Ambient drifting glow blobs — subtle extra depth over the video */
 body::before,
 body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -20;
   pointer-events: none;
   will-change: transform;
 }
 body::before {
   background:
-    radial-gradient(38rem 30rem at 12% 8%, oklch(0.45 0.22 265 / 0.30), transparent 60%),
-    radial-gradient(34rem 28rem at 92% 6%, oklch(0.42 0.25 306 / 0.26), transparent 58%);
+    radial-gradient(38rem 30rem at 12% 8%, oklch(0.55 0.006 260 / 0.22), transparent 60%),
+    radial-gradient(34rem 28rem at 92% 6%, oklch(0.35 0.006 260 / 0.20), transparent 58%);
   animation: drift-a 26s ease-in-out infinite alternate;
 }
 body::after {
   background:
-    radial-gradient(32rem 26rem at 50% 100%, oklch(0.40 0.24 340 / 0.20), transparent 60%),
-    radial-gradient(28rem 24rem at 5% 90%, oklch(0.42 0.16 195 / 0.18), transparent 55%);
+    radial-gradient(32rem 26rem at 50% 100%, oklch(0.60 0.006 260 / 0.16), transparent 60%),
+    radial-gradient(28rem 24rem at 5% 90%, oklch(0.45 0.006 260 / 0.14), transparent 55%);
   animation: drift-b 32s ease-in-out infinite alternate;
+}
+
+.light body::before {
+  background:
+    radial-gradient(38rem 30rem at 12% 8%, oklch(0.80 0.10 88 / 0.28), transparent 60%),
+    radial-gradient(34rem 28rem at 92% 6%, oklch(0.68 0.13 78 / 0.22), transparent 58%);
+}
+.light body::after {
+  background:
+    radial-gradient(32rem 26rem at 50% 100%, oklch(0.85 0.08 92 / 0.22), transparent 60%),
+    radial-gradient(28rem 24rem at 5% 90%, oklch(0.60 0.12 72 / 0.18), transparent 55%);
 }
 
 @keyframes drift-a {
@@ -180,13 +264,9 @@ body::after {
   100% { transform: translate3d(-3%, -2.5%, 0) scale(1.06); }
 }
 
-.light body::before,
-.light body::after {
-  opacity: 0.5;
-}
-
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after { animation: none; }
+  .app-bg-video { display: none; }
 }
 
 @utility glass-card {
@@ -206,7 +286,7 @@ body::after {
 
 @utility btn-brand {
   background: var(--gradient-brand);
-  color: white;
+  color: var(--primary-foreground);
   box-shadow: var(--shadow-glow);
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
