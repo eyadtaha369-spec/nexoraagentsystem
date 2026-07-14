@@ -3,7 +3,7 @@ import {
   Outlet, Link, createRootRouteWithContext, useRouter,
   HeadContent, Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
@@ -70,24 +70,56 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+/* ==========================================================
+ * Blurred looping video background — sits fixed behind
+ * everything on every page. Uses a ref to explicitly set
+ * `muted` and call .play() on mount, since React's JSX
+ * `muted` attribute alone is unreliable for autoplay in
+ * some browsers.
+ * ========================================================== */
+function BackgroundVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = true;
+    video.play().catch(() => {
+      // Autoplay blocked by the browser — safe to ignore,
+      // the static poster frame / background color still shows.
+    });
+  }, []);
+
+  return (
+    <div className="app-bg-video-wrap" aria-hidden="true">
+      <video
+        ref={videoRef}
+        className="app-bg-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+      >
+        <source src="/bg-video.mp4" type="video/mp4" />
+      </video>
+      <div className="app-bg-video-overlay" />
+    </div>
+  );
+}
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head><HeadContent /></head>
       <body style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-        <div className="app-bg-video-wrap" aria-hidden="true">
-          <video className="app-bg-video" autoPlay muted loop playsInline>
-            <source src="/bg-video.mp4" type="video/mp4" />
-          </video>
-          <div className="app-bg-video-overlay" />
-        </div>
+        <BackgroundVideo />
         {children}
         <Scripts />
       </body>
     </html>
   );
 }
- 
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -104,3 +136,4 @@ function RootComponent() {
     </ErrorBoundary>
   );
 }
+
