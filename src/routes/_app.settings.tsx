@@ -121,7 +121,7 @@ function SettingsPage() {
             <div className="flex items-center gap-4 pt-1">
               <div className="h-14 w-14 rounded-xl grid place-items-center overflow-hidden border border-border/60" style={{ background: "var(--gradient-brand)" }}>
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Company logo" className="h-full w-full object-contain bg-white" />
+                  <img src={logoUrl} alt="Company logo" className="h-full w-full object-contain" />
                 ) : (
                   <span className="text-lg font-bold">{s.companyName?.slice(0, 1).toUpperCase() || "N"}</span>
                 )}
