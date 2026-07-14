@@ -59,7 +59,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <aside className="hidden md:flex flex-col gap-1 border-r border-border/60 bg-sidebar/50 backdrop-blur-xl px-4 py-6 min-h-screen sticky top-0">
           <Link to="/dashboard" className="flex items-center gap-2 px-2 pb-6">
             <div className="h-9 w-9 rounded-xl btn-brand grid place-items-center text-lg font-bold overflow-hidden">
-              {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain bg-white" /> : "N"}
+              {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : "N"}
             </div>
             <div>
               <div className="text-lg font-semibold leading-none" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -107,7 +107,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="md:hidden flex items-center gap-2">
               <Link to="/dashboard" className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-lg btn-brand grid place-items-center text-sm font-bold overflow-hidden">
-                  {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain bg-white" /> : "N"}
+                  {logoUrl ? <img src={logoUrl} alt="Logo" className="h-full w-full object-contain" /> : "N"}
                 </div>
                 <span className="font-semibold">Nexora</span>
               </Link>
