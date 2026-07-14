@@ -50,59 +50,61 @@
   --color-brand-teal: var(--brand-teal);
 }
 
-/* Dark-first luxury CRM palette */
+/* Bold, near-black CRM palette — vivid blue → violet → magenta,
+   matching the metallic chrome logo mark. */
 :root {
   --radius: 0.875rem;
 
-  --background: oklch(0.16 0.02 260);
+  --background: oklch(0.10 0.018 265);
   --foreground: oklch(0.98 0.005 250);
 
-  --card: oklch(0.22 0.025 262 / 0.55);
+  --card: oklch(0.19 0.03 264 / 0.55);
   --card-foreground: oklch(0.98 0.005 250);
-  --popover: oklch(0.19 0.025 262);
+  --popover: oklch(0.15 0.03 264);
   --popover-foreground: oklch(0.98 0.005 250);
 
-  --primary: oklch(0.72 0.17 262);
-  --primary-foreground: oklch(0.14 0.02 260);
+  --primary: oklch(0.68 0.23 265);
+  --primary-foreground: oklch(0.10 0.02 260);
 
-  --secondary: oklch(0.26 0.03 262);
+  --secondary: oklch(0.22 0.035 264);
   --secondary-foreground: oklch(0.98 0.005 250);
 
-  --muted: oklch(0.24 0.025 262);
+  --muted: oklch(0.20 0.03 264);
   --muted-foreground: oklch(0.72 0.03 258);
 
-  --accent: oklch(0.32 0.06 265);
+  --accent: oklch(0.28 0.07 268);
   --accent-foreground: oklch(0.98 0.005 250);
 
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0.005 250);
 
-  --border: oklch(1 0 0 / 0.08);
-  --input: oklch(1 0 0 / 0.10);
-  --ring: oklch(0.72 0.17 262);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.11);
+  --ring: oklch(0.68 0.23 265);
 
-  --brand-blue: oklch(0.70 0.18 250);
-  --brand-purple: oklch(0.68 0.19 300);
-  --brand-teal: oklch(0.78 0.14 195);
+  --brand-blue: oklch(0.66 0.22 258);
+  --brand-purple: oklch(0.60 0.27 306);
+  --brand-teal: oklch(0.76 0.18 195);
+  --brand-magenta: oklch(0.64 0.26 340);
 
-  --chart-1: oklch(0.70 0.18 250);
-  --chart-2: oklch(0.68 0.19 300);
-  --chart-3: oklch(0.78 0.14 195);
-  --chart-4: oklch(0.80 0.17 85);
-  --chart-5: oklch(0.65 0.20 20);
+  --chart-1: oklch(0.66 0.22 258);
+  --chart-2: oklch(0.60 0.27 306);
+  --chart-3: oklch(0.76 0.18 195);
+  --chart-4: oklch(0.78 0.19 85);
+  --chart-5: oklch(0.64 0.26 340);
 
-  --sidebar: oklch(0.18 0.025 260);
-  --sidebar-foreground: oklch(0.95 0.005 250);
-  --sidebar-primary: oklch(0.72 0.17 262);
-  --sidebar-primary-foreground: oklch(0.14 0.02 260);
-  --sidebar-accent: oklch(0.26 0.03 262);
+  --sidebar: oklch(0.11 0.02 262);
+  --sidebar-foreground: oklch(0.96 0.005 250);
+  --sidebar-primary: oklch(0.68 0.23 265);
+  --sidebar-primary-foreground: oklch(0.10 0.02 260);
+  --sidebar-accent: oklch(0.22 0.035 264);
   --sidebar-accent-foreground: oklch(0.98 0.005 250);
-  --sidebar-border: oklch(1 0 0 / 0.08);
-  --sidebar-ring: oklch(0.72 0.17 262);
+  --sidebar-border: oklch(1 0 0 / 0.09);
+  --sidebar-ring: oklch(0.68 0.23 265);
 
-  --gradient-brand: linear-gradient(135deg, var(--brand-blue), var(--brand-purple) 55%, var(--brand-teal));
-  --gradient-surface: linear-gradient(160deg, oklch(0.22 0.03 262 / 0.6), oklch(0.18 0.03 275 / 0.35));
-  --shadow-glow: 0 30px 80px -30px oklch(0.55 0.22 270 / 0.55);
+  --gradient-brand: linear-gradient(135deg, var(--brand-blue), var(--brand-purple) 50%, var(--brand-magenta) 85%);
+  --gradient-surface: linear-gradient(160deg, oklch(0.20 0.035 264 / 0.6), oklch(0.14 0.035 275 / 0.35));
+  --shadow-glow: 0 30px 90px -28px oklch(0.55 0.25 285 / 0.6);
 }
 
 .dark { color-scheme: dark; }
@@ -115,7 +117,7 @@
   --card-foreground: oklch(0.18 0.02 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 260);
-  --primary: oklch(0.55 0.19 262);
+  --primary: oklch(0.55 0.22 265);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.94 0.02 262);
   --secondary-foreground: oklch(0.20 0.02 260);
@@ -135,20 +137,56 @@
 
 @layer base {
   body {
-    background: radial-gradient(1200px 700px at 15% -10%, oklch(0.30 0.11 265 / 0.35), transparent 60%),
-                radial-gradient(1000px 600px at 100% 0%, oklch(0.32 0.11 300 / 0.28), transparent 55%),
-                radial-gradient(900px 500px at 50% 120%, oklch(0.32 0.10 195 / 0.20), transparent 60%),
-                var(--color-background);
+    background: var(--color-background);
     color: var(--color-foreground);
     min-height: 100vh;
+    position: relative;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
-  .light body {
-    background: radial-gradient(1200px 700px at 15% -10%, oklch(0.85 0.07 265 / 0.35), transparent 60%),
-                radial-gradient(1000px 600px at 100% 0%, oklch(0.88 0.06 300 / 0.30), transparent 55%),
-                var(--color-background);
-  }
   * { border-color: var(--color-border); }
+}
+
+/* Animated "alive" ambient background — a few large, slowly drifting,
+   heavily blurred blobs behind everything. Pure CSS, GPU-accelerated,
+   and dim enough not to interfere with reading tables/data. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
+}
+body::before {
+  background:
+    radial-gradient(38rem 30rem at 12% 8%, oklch(0.45 0.22 265 / 0.30), transparent 60%),
+    radial-gradient(34rem 28rem at 92% 6%, oklch(0.42 0.25 306 / 0.26), transparent 58%);
+  animation: drift-a 26s ease-in-out infinite alternate;
+}
+body::after {
+  background:
+    radial-gradient(32rem 26rem at 50% 100%, oklch(0.40 0.24 340 / 0.20), transparent 60%),
+    radial-gradient(28rem 24rem at 5% 90%, oklch(0.42 0.16 195 / 0.18), transparent 55%);
+  animation: drift-b 32s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(2.5%, 3%, 0) scale(1.08); }
+}
+@keyframes drift-b {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-3%, -2.5%, 0) scale(1.06); }
+}
+
+.light body::before,
+.light body::after {
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
 }
 
 @utility glass-card {
