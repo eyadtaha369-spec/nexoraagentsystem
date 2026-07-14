@@ -119,7 +119,7 @@ function SettingsPage() {
           <div className="space-y-2 pt-2 border-t border-border/60">
             <Label>Company logo</Label>
             <div className="flex items-center gap-4 pt-1">
-              <div className="h-14 w-14 rounded-xl grid place-items-center overflow-hidden border border-border/60" style={{ background: "var(--gradient-brand)" }}>
+              <div className="h-14 w-14 rounded-xl grid place-items-center overflow-hidden border border-border/60" style={logoUrl ? undefined : { background: "var(--gradient-brand)" }}>
                 {logoUrl ? (
                   <img src={logoUrl} alt="Company logo" className="h-full w-full object-contain" />
                 ) : (
