@@ -75,12 +75,19 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en" className="dark">
       <head><HeadContent /></head>
       <body style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+        <div className="app-bg-video-wrap" aria-hidden="true">
+          <video className="app-bg-video" autoPlay muted loop playsInline>
+            <source src="/bg-video.mp4" type="video/mp4" />
+          </video>
+          <div className="app-bg-video-overlay" />
+        </div>
         {children}
         <Scripts />
       </body>
     </html>
   );
 }
+ 
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
