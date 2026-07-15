@@ -15,10 +15,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useDebounce } from "@/hooks/useDebounce";
 import { toast } from "sonner";
 import type { Lead, LeadPriority, LeadStatus, User } from "@/types/domain";
-import { Copy, Eye, MapPin, MessageSquare, Phone, Plus, Facebook, Instagram, Loader2 } from "lucide-react";
+import { Copy, Eye, MapPin, MessageSquare, Phone, Plus, Facebook, Instagram, Loader2, Trash2, Pencil } from "lucide-react";
+
+interface LeadsSearch {
+  page?: number;
+}
 
 export const Route = createFileRoute("/_app/leads")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): LeadsSearch => ({
+    page: search.page ? Number(search.page) || 1 : undefined,
+  }),
   head: () => ({ meta: [{ title: "Leads — Nexora CRM" }] }),
   component: LeadsPage,
 });
@@ -37,20 +44,27 @@ const EMPTY_FORM = {
 function LeadsPage() {
   const { user } = useAuth();
   const nav = useNavigate();
+  const search = Route.useSearch();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agents, setAgents] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search_, setSearch_] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
   const [prioFilter, setPrioFilter] = useState<LeadPriority | "all">("all");
   const [agentFilter, setAgentFilter] = useState<string>("all");
   const [sort, setSort] = useState<LeadSort>("newest");
-  const [page, setPage] = useState(1);
-  const debounced = useDebounce(search, 250);
+  const page = search.page ?? 1;
+  const debounced = useDebounce(search_, 250);
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  function setPage(p: number) {
+    nav({ to: "/leads", search: (prev) => ({ ...prev, page: p }), replace: true });
+  }
 
   async function load() {
     if (!user) return;
@@ -71,8 +85,12 @@ function LeadsPage() {
 
   useEffect(() => { load(); }, [user, debounced, statusFilter, prioFilter, agentFilter, sort]);
 
-  const pageLeads = useMemo(() => leads.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [leads, page]);
   const totalPages = Math.max(1, Math.ceil(leads.length / PAGE_SIZE));
+  // If the current page becomes out of range (e.g. after deleting the last item on it), snap back.
+  const safePage = Math.min(page, totalPages);
+  useEffect(() => { if (page !== safePage) setPage(safePage); }, [page, safePage]);
+
+  const pageLeads = useMemo(() => leads.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), [leads, safePage]);
   const agentName = (id: string | null) => id ? (agents.find((a) => a.id === id)?.fullName ?? (user?.id === id ? user?.fullName : "—")) : "Unassigned";
 
   async function copyPhone(phone: string) {
@@ -80,9 +98,37 @@ function LeadsPage() {
     toast.success("Phone copied");
   }
 
-  function openModal() {
+  function openCreateModal() {
+    setEditingId(null);
     setForm(EMPTY_FORM);
     setModalOpen(true);
+  }
+
+  function openEditModal(l: Lead, e: React.MouseEvent) {
+    e.stopPropagation();
+    setEditingId(l.id);
+    setForm({
+      clientName: l.clientName, phone: l.phone,
+      mapsLink: l.mapsLink || "", instagram: l.instagram || "", facebook: l.facebook || "",
+      status: l.status, priority: l.priority,
+      source: l.source || "", assignedAgentId: l.assignedAgentId || "",
+    });
+    setModalOpen(true);
+  }
+
+  async function handleDelete(l: Lead, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!window.confirm(`Delete "${l.clientName}"? This can't be undone.`)) return;
+    setDeletingId(l.id);
+    try {
+      await leadService.delete(l.id);
+      toast.success("Lead deleted");
+      setLeads((prev) => prev.filter((x) => x.id !== l.id));
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to delete lead.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function submitLead() {
@@ -92,27 +138,40 @@ function LeadsPage() {
     }
     setSubmitting(true);
     try {
-      await leadService.create({
-        clientName: form.clientName.trim(),
-        phone: form.phone.trim(),
-        mapsLink: form.mapsLink.trim() || undefined,
-        instagram: form.instagram.trim() || undefined,
-        facebook: form.facebook.trim() || undefined,
-        status: form.status,
-        priority: form.priority,
-        source: form.source.trim() || undefined,
-        // Agents always get assigned to their own leads — never left unassigned.
-        // Admins keep whatever they picked (or none, to let round-robin decide).
-        assignedAgentId: user?.role === "agent" ? user.id : (form.assignedAgentId || null),
-        nextFollowUp: null,
-        followUpNote: "",
-      } as any);
-      toast.success("Lead created");
+      if (editingId) {
+        const wasLost = form.status === "Lost";
+        await leadService.update(editingId, {
+          clientName: form.clientName.trim(),
+          phone: form.phone.trim(),
+          mapsLink: form.mapsLink.trim() || undefined,
+          instagram: form.instagram.trim() || undefined,
+          facebook: form.facebook.trim() || undefined,
+          status: form.status,
+          priority: form.priority,
+          source: form.source.trim() || undefined,
+          assignedAgentId: form.assignedAgentId || null,
+        } as any);
+        toast.success(wasLost ? "Lead marked Lost and removed" : "Lead updated");
+      } else {
+        await leadService.create({
+          clientName: form.clientName.trim(),
+          phone: form.phone.trim(),
+          mapsLink: form.mapsLink.trim() || undefined,
+          instagram: form.instagram.trim() || undefined,
+          facebook: form.facebook.trim() || undefined,
+          status: form.status,
+          priority: form.priority,
+          source: form.source.trim() || undefined,
+          assignedAgentId: user?.role === "agent" ? user.id : (form.assignedAgentId || null),
+          nextFollowUp: null,
+          followUpNote: "",
+        } as any);
+        toast.success("Lead created");
+      }
       setModalOpen(false);
-      setPage(1);
       await load();
     } catch (err: any) {
-      toast.error(err?.message ?? "Failed to create lead.");
+      toast.error(err?.message ?? "Failed to save lead.");
     } finally {
       setSubmitting(false);
     }
@@ -125,14 +184,14 @@ function LeadsPage() {
         title="Leads"
         description={user?.role === "admin" ? "All leads across your organization." : "Your assigned leads."}
         actions={
-          <Button className="btn-brand hover:btn-brand-hover border-0 gap-2" onClick={openModal}>
+          <Button className="btn-brand hover:btn-brand-hover border-0 gap-2" onClick={openCreateModal}>
             <Plus className="h-4 w-4" /> New lead
           </Button>
         }
       />
 
       <div className="glass-card p-4 flex flex-wrap items-center gap-3">
-        <Input placeholder="Search name, phone, client ID…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="max-w-xs" />
+        <Input placeholder="Search name, phone, client ID…" value={search_} onChange={(e) => { setSearch_(e.target.value); setPage(1); }} className="max-w-xs" />
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v as any); setPage(1); }}>
           <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
@@ -178,7 +237,7 @@ function LeadsPage() {
         <EmptyState
           title="No leads yet"
           description="Import leads from Google Sheets, upload a CSV, or create your first lead manually."
-          action={<Button onClick={openModal} className="btn-brand hover:btn-brand-hover border-0">New lead</Button>}
+          action={<Button onClick={openCreateModal} className="btn-brand hover:btn-brand-hover border-0">New lead</Button>}
         />
       ) : (
         <div className="glass-card overflow-hidden">
@@ -199,7 +258,7 @@ function LeadsPage() {
               <tbody>
                 {pageLeads.map((l) => (
                   <tr key={l.id} className="border-b border-border/40 last:border-0 hover:bg-accent/30 transition-colors cursor-pointer"
-                      onClick={() => nav({ to: "/leads/$id", params: { id: l.id } })}>
+                      onClick={() => nav({ to: "/leads/$id", params: { id: l.id }, search: { page: safePage } as any })}>
                     <td className="px-4 py-3">
                       <div className="font-medium">{l.clientName}</div>
                       <div className="text-xs text-muted-foreground">{l.clientId}</div>
@@ -212,13 +271,22 @@ function LeadsPage() {
                     <td className="px-4 py-3 text-muted-foreground">{l.nextFollowUp ? new Date(l.nextFollowUp).toLocaleDateString() : "—"}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1">
-                        <Link to="/leads/$id" params={{ id: l.id }} className="p-1.5 rounded hover:bg-accent" aria-label="View"><Eye className="h-4 w-4" /></Link>
+                        <Link to="/leads/$id" params={{ id: l.id }} search={{ page: safePage } as any} className="p-1.5 rounded hover:bg-accent" aria-label="View"><Eye className="h-4 w-4" /></Link>
+                        <button onClick={(e) => openEditModal(l, e)} className="p-1.5 rounded hover:bg-accent" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
                         <a href={`tel:${l.phone}`} className="p-1.5 rounded hover:bg-accent" aria-label="Call"><Phone className="h-4 w-4" /></a>
                         <a href={`https://wa.me/${l.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="WhatsApp"><MessageSquare className="h-4 w-4" /></a>
                         <button onClick={() => copyPhone(l.phone)} className="p-1.5 rounded hover:bg-accent" aria-label="Copy phone"><Copy className="h-4 w-4" /></button>
                         {l.mapsLink && <a href={l.mapsLink} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="Maps"><MapPin className="h-4 w-4" /></a>}
                         {l.facebook && <a href={l.facebook} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="Facebook"><Facebook className="h-4 w-4" /></a>}
                         {l.instagram && <a href={l.instagram} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="Instagram"><Instagram className="h-4 w-4" /></a>}
+                        <button
+                          onClick={(e) => handleDelete(l, e)}
+                          disabled={deletingId === l.id}
+                          className="p-1.5 rounded hover:bg-destructive/20 text-destructive"
+                          aria-label="Delete"
+                        >
+                          {deletingId === l.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -227,10 +295,10 @@ function LeadsPage() {
             </table>
           </div>
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/60">
-            <div className="text-xs text-muted-foreground">Page {page} of {totalPages} · {leads.length} results</div>
+            <div className="text-xs text-muted-foreground">Page {safePage} of {totalPages} · {leads.length} results</div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Prev</Button>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, safePage - 1))} disabled={safePage === 1}>Prev</Button>
+              <Button variant="outline" size="sm" onClick={() => setPage(Math.min(totalPages, safePage + 1))} disabled={safePage === totalPages}>Next</Button>
             </div>
           </div>
         </div>
@@ -239,7 +307,7 @@ function LeadsPage() {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>New lead</DialogTitle>
+            <DialogTitle>{editingId ? "Edit lead" : "New lead"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-3">
@@ -262,6 +330,9 @@ function LeadsPage() {
                     {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {form.status === "Lost" && (
+                  <p className="text-xs text-destructive">Saving as "Lost" will permanently remove this lead.</p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label>Priority</Label>
@@ -274,7 +345,7 @@ function LeadsPage() {
               </div>
             </div>
 
-            {agents.length > 0 && (
+            {user?.role === "admin" && agents.length > 0 && (
               <div className="space-y-1.5">
                 <Label>Assign to agent</Label>
                 <Select value={form.assignedAgentId || "unassigned"} onValueChange={(v) => setForm((f) => ({ ...f, assignedAgentId: v === "unassigned" ? "" : v }))}>
@@ -310,7 +381,7 @@ function LeadsPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setModalOpen(false)} disabled={submitting}>Cancel</Button>
             <Button onClick={submitLead} disabled={submitting} className="btn-brand hover:btn-brand-hover border-0">
-              {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating…</> : "Create lead"}
+              {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</> : editingId ? "Save changes" : "Create lead"}
             </Button>
           </DialogFooter>
         </DialogContent>
