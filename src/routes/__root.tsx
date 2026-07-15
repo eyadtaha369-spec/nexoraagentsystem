@@ -101,7 +101,7 @@ function BackgroundVideo() {
         playsInline
         preload="auto"
       >
-        <source src="/bg-video-v2.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/your-account/video/upload/v.../bg-video.mp4" type="video/mp4" />
       </video>
       <div className="app-bg-video-overlay" />
     </div>
