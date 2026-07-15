@@ -203,23 +203,23 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transform: scale(1.15);
-  filter: blur(36px) saturate(115%) brightness(0.75);
-  opacity: 0.9;
+  transform: scale(1.08);
+  filter: blur(10px) saturate(115%) brightness(0.7);
+  opacity: 0.95;
   transition: filter 0.4s ease, opacity 0.4s ease;
 }
 .app-bg-video-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, oklch(0.04 0 0 / 0.38), oklch(0.08 0.006 260 / 0.46));
+  background: linear-gradient(160deg, oklch(0.04 0 0 / 0.32), oklch(0.08 0.006 260 / 0.4));
 }
 
 .light .app-bg-video {
-  filter: blur(40px) saturate(108%) brightness(1.3);
-  opacity: 0.75;
+  filter: blur(12px) saturate(108%) brightness(1.2);
+  opacity: 0.85;
 }
 .light .app-bg-video-overlay {
-  background: linear-gradient(160deg, oklch(1 0 0 / 0.38), oklch(0.95 0.035 85 / 0.42));
+  background: linear-gradient(160deg, oklch(1 0 0 / 0.32), oklch(0.95 0.035 85 / 0.36));
 }
 
 /* Ambient drifting glow blobs — subtle extra depth over the video */
