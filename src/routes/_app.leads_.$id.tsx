@@ -17,6 +17,9 @@ import { ArrowLeft, Copy, Facebook, Instagram, MapPin, MessageSquare, Phone, Cal
 
 export const Route = createFileRoute("/_app/leads/$id")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>): { page?: number } => ({
+    page: search.page ? Number(search.page) || undefined : undefined,
+  }),
   head: () => ({ meta: [{ title: "Lead details — Nexora CRM" }] }),
   component: LeadDetails,
 });
@@ -34,6 +37,7 @@ function toLocalInputValue(iso: string | null) {
 
 function LeadDetails() {
   const { id } = Route.useParams();
+  const search = Route.useSearch();
   const { user } = useAuth();
   const nav = useNavigate();
   const [lead, setLead] = useState<Lead | null>(null);
@@ -114,7 +118,7 @@ function LeadDetails() {
 
   return (
     <div className="space-y-6">
-      <Link to="/leads" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All leads</Link>
+      <Link to="/leads" search={{ page: search.page ?? 1 } as any} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> All leads</Link>
       <PageHeader eyebrow={lead.clientId} title={lead.clientName}
         actions={
           <div className="flex gap-2">
