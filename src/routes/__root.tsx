@@ -101,7 +101,7 @@ function BackgroundVideo() {
         playsInline
         preload="auto"
       >
-        <source src="https://res.cloudinary.com/rolja9pz/video/upload/v1784088825/WhatsApp_Video_2026-07-15_at_7.11.54_AM_bpfbxk.mp4" type="video/mp4" />
+        <source src="https://res.cloudinary.com/rolja9pz/video/upload/v1784085458/READY_BG_VIDEO_pi6rqz.mp4" />
       </video>
       <div className="app-bg-video-overlay" />
     </div>
