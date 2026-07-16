@@ -87,8 +87,12 @@ function LeadsPage() {
 
   const totalPages = Math.max(1, Math.ceil(leads.length / PAGE_SIZE));
   // If the current page becomes out of range (e.g. after deleting the last item on it), snap back.
+  // Only do this once loading has finished — otherwise the momentary empty list during
+  // load() would incorrectly force the page back to 1 before data arrives.
   const safePage = Math.min(page, totalPages);
-  useEffect(() => { if (page !== safePage) setPage(safePage); }, [page, safePage]);
+  useEffect(() => {
+    if (!loading && page !== safePage) setPage(safePage);
+  }, [loading, page, safePage]);
 
   const pageLeads = useMemo(() => leads.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE), [leads, safePage]);
   const agentName = (id: string | null) => id ? (agents.find((a) => a.id === id)?.fullName ?? (user?.id === id ? user?.fullName : "—")) : "Unassigned";
