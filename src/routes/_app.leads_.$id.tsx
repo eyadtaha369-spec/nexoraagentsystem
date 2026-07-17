@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import type { Lead, LeadPriority, LeadStatus, User } from "@/types/domain";
 import { ArrowLeft, Copy, Facebook, Instagram, MapPin, MessageSquare, Phone, CalendarClock } from "lucide-react";
 
-export const Route = createFileRoute("/_app/leads/$id")({
+export const Route = createFileRoute("/_app/leads_/$id")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): { page?: number } => ({
     page: search.page ? Number(search.page) || undefined : undefined,

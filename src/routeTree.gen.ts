@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppReportsRouteImport } from './routes/_app.reports'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppPortfolioRouteImport } from './routes/_app.portfolio'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppLeadsRouteImport } from './routes/_app.leads'
 import { Route as AppLeaderboardRouteImport } from './routes/_app.leaderboard'
@@ -26,7 +27,7 @@ import { Route as AppAgentsRouteImport } from './routes/_app.agents'
 import { Route as AppAgentDashboardRouteImport } from './routes/_app.agent-dashboard'
 import { Route as AppAdminDashboardRouteImport } from './routes/_app.admin-dashboard'
 import { Route as AppActivityRouteImport } from './routes/_app.activity'
-import { Route as AppLeadsIdRouteImport } from './routes/_app.leads.$id'
+import { Route as AppLeadsIdRouteImport } from './routes/_app.leads_.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -55,6 +56,11 @@ const AppReportsRoute = AppReportsRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPortfolioRoute = AppPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
@@ -113,9 +119,9 @@ const AppActivityRoute = AppActivityRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeadsIdRoute = AppLeadsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppLeadsRoute,
+  id: '/leads_/$id',
+  path: '/leads/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -130,8 +136,9 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/leaderboard': typeof AppLeaderboardRoute
-  '/leads': typeof AppLeadsRouteWithChildren
+  '/leads': typeof AppLeadsRoute
   '/notifications': typeof AppNotificationsRoute
+  '/portfolio': typeof AppPortfolioRoute
   '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
@@ -149,8 +156,9 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/follow-ups': typeof AppFollowUpsRoute
   '/leaderboard': typeof AppLeaderboardRoute
-  '/leads': typeof AppLeadsRouteWithChildren
+  '/leads': typeof AppLeadsRoute
   '/notifications': typeof AppNotificationsRoute
+  '/portfolio': typeof AppPortfolioRoute
   '/profile': typeof AppProfileRoute
   '/reports': typeof AppReportsRoute
   '/settings': typeof AppSettingsRoute
@@ -170,12 +178,13 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/follow-ups': typeof AppFollowUpsRoute
   '/_app/leaderboard': typeof AppLeaderboardRoute
-  '/_app/leads': typeof AppLeadsRouteWithChildren
+  '/_app/leads': typeof AppLeadsRoute
   '/_app/notifications': typeof AppNotificationsRoute
+  '/_app/portfolio': typeof AppPortfolioRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reports': typeof AppReportsRoute
   '/_app/settings': typeof AppSettingsRoute
-  '/_app/leads/$id': typeof AppLeadsIdRoute
+  '/_app/leads_/$id': typeof AppLeadsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/leads'
     | '/notifications'
+    | '/portfolio'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/leads'
     | '/notifications'
+    | '/portfolio'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -232,10 +243,11 @@ export interface FileRouteTypes {
     | '/_app/leaderboard'
     | '/_app/leads'
     | '/_app/notifications'
+    | '/_app/portfolio'
     | '/_app/profile'
     | '/_app/reports'
     | '/_app/settings'
-    | '/_app/leads/$id'
+    | '/_app/leads_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -286,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/portfolio': {
+      id: '/_app/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AppPortfolioRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/notifications': {
@@ -365,27 +384,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActivityRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/leads/$id': {
-      id: '/_app/leads/$id'
-      path: '/$id'
+    '/_app/leads_/$id': {
+      id: '/_app/leads_/$id'
+      path: '/leads/$id'
       fullPath: '/leads/$id'
       preLoaderRoute: typeof AppLeadsIdRouteImport
-      parentRoute: typeof AppLeadsRoute
+      parentRoute: typeof AppRoute
     }
   }
 }
-
-interface AppLeadsRouteChildren {
-  AppLeadsIdRoute: typeof AppLeadsIdRoute
-}
-
-const AppLeadsRouteChildren: AppLeadsRouteChildren = {
-  AppLeadsIdRoute: AppLeadsIdRoute,
-}
-
-const AppLeadsRouteWithChildren = AppLeadsRoute._addFileChildren(
-  AppLeadsRouteChildren,
-)
 
 interface AppRouteChildren {
   AppActivityRoute: typeof AppActivityRoute
@@ -397,11 +404,13 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppFollowUpsRoute: typeof AppFollowUpsRoute
   AppLeaderboardRoute: typeof AppLeaderboardRoute
-  AppLeadsRoute: typeof AppLeadsRouteWithChildren
+  AppLeadsRoute: typeof AppLeadsRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
+  AppPortfolioRoute: typeof AppPortfolioRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportsRoute: typeof AppReportsRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppLeadsIdRoute: typeof AppLeadsIdRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -414,11 +423,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppFollowUpsRoute: AppFollowUpsRoute,
   AppLeaderboardRoute: AppLeaderboardRoute,
-  AppLeadsRoute: AppLeadsRouteWithChildren,
+  AppLeadsRoute: AppLeadsRoute,
   AppNotificationsRoute: AppNotificationsRoute,
+  AppPortfolioRoute: AppPortfolioRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportsRoute: AppReportsRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppLeadsIdRoute: AppLeadsIdRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -431,3 +442,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
