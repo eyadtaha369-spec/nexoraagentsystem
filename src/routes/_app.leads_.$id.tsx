@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { leadService } from "@/services/leadService";
 import { authService } from "@/services/authService";
+import { callViaGoogleVoice } from "@/lib/googleVoice";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageHeader } from "@/components/common/PageHeader";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -122,7 +123,7 @@ function LeadDetails() {
       <PageHeader eyebrow={lead.clientId} title={lead.clientName}
         actions={
           <div className="flex gap-2">
-            <a href={`tel:${lead.phone}`}><Button variant="outline" className="gap-2"><Phone className="h-4 w-4" /> Call</Button></a>
+            <Button variant="outline" className="gap-2" onClick={() => callViaGoogleVoice(lead.phone)}><Phone className="h-4 w-4" /> Call</Button>
             <a href={`https://wa.me/${lead.phone.replace(/[^0-9]/g,"")}`} target="_blank" rel="noreferrer"><Button variant="outline" className="gap-2"><MessageSquare className="h-4 w-4" /> WhatsApp</Button></a>
             <Button variant="outline" className="gap-2" onClick={() => { navigator.clipboard.writeText(lead.phone); toast.success("Phone copied"); }}>
               <Copy className="h-4 w-4" /> Copy

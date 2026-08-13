@@ -3,7 +3,7 @@
 // as a local, embedded process — no external hosting, no internet needed to
 // open the app. Actual CRM data still syncs with Google Apps Script when a
 // connection is available; see src/services/offline for that layer.
-const { app, BrowserWindow, Menu } = require("electron");
+const { app, BrowserWindow, Menu, shell } = require("electron");
 const path = require("node:path");
 const { fork } = require("node:child_process");
 const net = require("node:net");
@@ -77,6 +77,23 @@ function createWindow() {
   Menu.setApplicationMenu(null);
   mainWindow.loadURL(`http://127.0.0.1:${PORT}/`);
   mainWindow.on("closed", () => { mainWindow = null; });
+
+  // Links that try to open a new window/tab (Google Voice calls, WhatsApp,
+  // Maps, social links, etc.) should open in the system's default browser,
+  // not get silently swallowed or open inside the app itself.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+
+  // Guard against ever navigating the app window itself away to an external
+  // site (e.g. a stray non-blank-target link) — keep it pinned to the local app.
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    if (!url.startsWith(`http://127.0.0.1:${PORT}`)) {
+      event.preventDefault();
+      shell.openExternal(url);
+    }
+  });
 }
 
 app.whenReady().then(async () => {

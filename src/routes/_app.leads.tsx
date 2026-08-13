@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { leadService, type LeadFilters, type LeadSort } from "@/services/leadService";
 import { authService } from "@/services/authService";
+import { callViaGoogleVoice } from "@/lib/googleVoice";
 import { PageHeader } from "@/components/common/PageHeader";
 import { EmptyState } from "@/components/common/EmptyState";
 import { TableSkeleton } from "@/components/common/TableSkeleton";
@@ -277,7 +278,7 @@ function LeadsPage() {
                       <div className="flex items-center justify-end gap-1">
                         <Link to="/leads/$id" params={{ id: l.id }} search={{ page: safePage } as any} className="p-1.5 rounded hover:bg-accent" aria-label="View"><Eye className="h-4 w-4" /></Link>
                         <button onClick={(e) => openEditModal(l, e)} className="p-1.5 rounded hover:bg-accent" aria-label="Edit"><Pencil className="h-4 w-4" /></button>
-                        <a href={`tel:${l.phone}`} className="p-1.5 rounded hover:bg-accent" aria-label="Call"><Phone className="h-4 w-4" /></a>
+                        <button onClick={() => callViaGoogleVoice(l.phone)} className="p-1.5 rounded hover:bg-accent" aria-label="Call"><Phone className="h-4 w-4" /></button>
                         <a href={`https://wa.me/${l.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="WhatsApp"><MessageSquare className="h-4 w-4" /></a>
                         <button onClick={() => copyPhone(l.phone)} className="p-1.5 rounded hover:bg-accent" aria-label="Copy phone"><Copy className="h-4 w-4" /></button>
                         {l.mapsLink && <a href={l.mapsLink} target="_blank" rel="noreferrer" className="p-1.5 rounded hover:bg-accent" aria-label="Maps"><MapPin className="h-4 w-4" /></a>}
