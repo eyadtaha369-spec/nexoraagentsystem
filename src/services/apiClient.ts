@@ -30,7 +30,8 @@ function notifyUnauthorized() {
   unauthorizedListeners.forEach((fn) => fn());
 }
 
-export async function request<T>({ action, method = "POST", data, signal }: RequestOptions): Promise<T> {
+/** Network-only call to the Apps Script backend — no offline fallback. Used by the sync engine and by request() below. */
+export async function rawRequest<T>({ action, method = "POST", data, signal }: RequestOptions): Promise<T> {
   if (!API_CONFIG.baseUrl) {
     throw new ApiError("NOT_CONFIGURED", `Backend not configured (action=${action})`);
   }
@@ -77,4 +78,32 @@ export async function request<T>({ action, method = "POST", data, signal }: Requ
     clearTimeout(timer);
     signal?.removeEventListener("abort", onExternalAbort);
   }
+}
+
+/** Offline-aware call used by every service. Tries the network first; if that
+ * fails (or the browser is already offline), falls back to the local cache /
+ * queues the write for later sync. */
+export async function request<T>(opts: RequestOptions): Promise<T> {
+  const isOnline = typeof navigator === "undefined" ? true : navigator.onLine;
+
+  if (isOnline) {
+    try {
+      return await rawRequest<T>(opts);
+    } catch (e) {
+      if (e instanceof ApiError && (e.code === "UNAUTHORIZED" || e.code === "API_ERROR")) throw e;
+      // Network/timeout error even though navigator says online (e.g. flaky wifi) — fall back.
+      return fallbackToLocal<T>(opts, e as Error);
+    }
+  }
+  return fallbackToLocal<T>(opts);
+}
+
+async function fallbackToLocal<T>(opts: RequestOptions, networkError?: Error): Promise<T> {
+  const { hasLocalHandler, runLocalHandler } = await import("./offline/localHandlers");
+  if (!hasLocalHandler(opts.action)) {
+    throw networkError instanceof ApiError
+      ? networkError
+      : new ApiError("OFFLINE_UNSUPPORTED", `"${opts.action}" needs an internet connection.`);
+  }
+  return runLocalHandler<T>(opts.action, opts.data);
 }

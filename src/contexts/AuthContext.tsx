@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { authService } from "@/services/authService";
 import { onUnauthorized } from "@/services/apiClient";
 import { session } from "@/services/session";
+import { startSyncEngine, pullSnapshot } from "@/services/offline/sync";
 import type { User } from "@/types/domain";
 
 interface AuthState {
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     (async () => {
       try { await refresh(); } finally { setLoading(false); }
+      if (session.token()) startSyncEngine();
     })();
     const off401 = onUnauthorized(() => {
       session.clear();
@@ -46,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string, remember = false) => {
     const { user } = await authService.login(email, password, remember);
     setUser(user);
+    startSyncEngine();
+    pullSnapshot();
     return user;
   }, []);
 

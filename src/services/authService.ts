@@ -28,10 +28,19 @@ export const authService = {
   },
 
   async me(): Promise<User | null> {
-    if (!session.token()) return null;
+    const cached = session.get();
+    if (!cached) return null;
+    // Offline: trust the cached (non-expired) session instead of pinging the server.
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      return { id: cached.userId, fullName: cached.fullName, email: cached.email, role: cached.role, status: "Active", createdAt: "" };
+    }
     try {
       return await request<User>({ action: ACTIONS.me });
-    } catch {
+    } catch (e) {
+      // Network hiccup while "online" per the browser — don't sign the user out, just serve the cached identity.
+      if (e instanceof Error && !(e as { code?: string }).code?.toString().includes("UNAUTHORIZED")) {
+        return { id: cached.userId, fullName: cached.fullName, email: cached.email, role: cached.role, status: "Active", createdAt: "" };
+      }
       session.clear();
       return null;
     }

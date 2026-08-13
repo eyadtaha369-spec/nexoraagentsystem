@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { notificationService } from "@/services/notificationService";
 import { settingsService } from "@/services/settingsService";
+import { SyncStatus } from "@/components/layout/SyncStatus";
 
 const ALL_NAV: { to: string; label: string; icon: ReactNode; adminOnly?: boolean }[] = [
   { to: "/dashboard",       label: "Dashboard",   icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -120,6 +121,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <SyncStatus />
               <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={toggle}>
                 {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
